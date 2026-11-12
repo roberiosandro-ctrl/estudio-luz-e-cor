@@ -109,6 +109,33 @@ create table if not exists public.status_history (
   )
 );
 
+-- Registra automaticamente a trilha de status sem expor permissão de INSERT
+-- na tabela de histórico para usuários do navegador.
+create or replace function public.record_order_status_change()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  if tg_op = 'INSERT' then
+    insert into public.status_history (order_id, previous_status, new_status, changed_by)
+    values (new.id, null, new.status, (select auth.uid()));
+  elsif old.status is distinct from new.status then
+    insert into public.status_history (order_id, previous_status, new_status, changed_by)
+    values (new.id, old.status, new.status, (select auth.uid()));
+  end if;
+  return new;
+end;
+$;
+
+revoke all on function public.record_order_status_change() from public;
+
+drop trigger if exists orders_record_status_change on public.orders;
+create trigger orders_record_status_change
+after insert or update of status on public.orders
+for each row execute function public.record_order_status_change();
+
 create index if not exists orders_status_created_idx
   on public.orders(status, created_at desc);
 create index if not exists orders_category_created_idx
@@ -211,6 +238,21 @@ create policy "Admins can read status history"
   on public.status_history for select
   to authenticated
   using (public.is_active_admin());
+
+-- Privilégios explícitos: o navegador só lê categorias e administradores
+-- autenticados consultam/atualizam o que as políticas RLS permitem.
+revoke all on public.categories, public.orders, public.admin_users,
+  public.order_files, public.generations, public.status_history
+  from anon, authenticated;
+
+grant select on public.categories to anon, authenticated;
+grant select, update on public.orders to authenticated;
+grant select on public.admin_users, public.order_files,
+  public.generations, public.status_history to authenticated;
+
+grant all on public.categories, public.orders, public.admin_users,
+  public.order_files, public.generations, public.status_history to service_role;
+grant usage, select on all sequences in schema public to service_role;
 
 -- Buckets privados. O backend usará a chave service_role somente no servidor
 -- e URLs assinadas curtas para compartilhar arquivos autorizados.

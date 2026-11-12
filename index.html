@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17131d">
+  <meta name="description" content="Crie ensaios fotográficos personalizados com inteligência artificial no Estúdio Luz e Cor.">
+  <title>Estúdio Luz e Cor | Seu ensaio, do seu jeito</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="Estúdio Luz e Cor - início">
+      <span class="brand-mark">L<span>✦</span>C</span>
+      <span class="brand-name">ESTÚDIO <b>LUZ E COR</b></span>
+    </a>
+    <nav aria-label="Navegação principal">
+      <a href="#ensaios">Ensaios</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#pedido" class="nav-cta">Criar meu ensaio</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow"><i></i> FOTOGRAFIA CRIATIVA COM IA</span>
+        <h1>Uma nova versão<br>de <em>você.</em></h1>
+        <p>Transforme suas ideias em fotos incríveis. Escolha o estilo, envie sua foto e imagine as possibilidades.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#pedido">Quero criar minhas fotos <span>↗</span></a>
+          <a class="text-link" href="#ensaios">Conhecer os estilos</a>
+        </div>
+        <div class="hero-note"><span class="sparkle">✦</span> Seu ensaio personalizado, sem precisar sair de casa.</div>
+      </div>
+      <div class="hero-art">
+        <div class="hero-photo photo-main" role="img" aria-label="Retrato feminino em ensaio fotográfico editorial"></div>
+        <div class="hero-photo photo-small" role="img" aria-label="Retrato em estilo fotográfico"></div>
+        <div class="photo-label"><span>SEU ESTILO.</span><b>SUA HISTÓRIA.</b></div>
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+      </div>
+    </section>
+
+    <section class="intro-strip">
+      <span>CRIATIVIDADE</span><b>✦</b><span>PERSONALIDADE</span><b>✦</b><span>SEU MELHOR ÂNGULO</span><b>✦</b><span>ESTÚDIO LUZ E COR</span>
+    </section>
+
+    <section class="section styles-section" id="ensaios">
+      <div class="section-heading">
+        <div><span class="eyebrow">ENCONTRE SEU ESTILO</span><h2>Qual ensaio combina<br>com você?</h2></div>
+        <p>Inspire-se em algumas possibilidades e escolha a proposta que mais tem a sua cara.</p>
+      </div>
+      <div class="style-grid">
+        <article class="style-card style-one"><div class="style-image"></div><div class="style-caption"><span>01 / ELEGÂNCIA</span><h3>Retrato clássico</h3></div></article>
+        <article class="style-card style-two"><div class="style-image"></div><div class="style-caption"><span>02 / PERSONALIDADE</span><h3>Editorial moderno</h3></div></article>
+        <article class="style-card style-three"><div class="style-image"></div><div class="style-caption"><span>03 / MOMENTOS</span><h3>Ensaio especial</h3></div></article>
+      </div>
+      <p class="gallery-disclaimer">Imagens ilustrativas de estilos. O resultado final é personalizado conforme as informações e fotos enviadas.</p>
+    </section>
+
+    <section class="how-section" id="como-funciona">
+      <div class="how-inner">
+        <span class="eyebrow">SIMPLES ASSIM</span>
+        <h2>Seu ensaio em<br><em>poucos passos.</em></h2>
+        <div class="steps">
+          <div class="step"><span>01</span><h3>Escolha o estilo</h3><p>Selecione a inspiração para suas fotos.</p></div>
+          <div class="step"><span>02</span><h3>Envie sua foto</h3><p>Conte como gostaria que seu ensaio fosse.</p></div>
+          <div class="step"><span>03</span><h3>Receba seu resultado</h3><p>Após a confirmação do pedido, combinamos a entrega com você.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="order-section section" id="pedido">
+      <div class="order-copy">
+        <span class="eyebrow">VAMOS COMEÇAR?</span>
+        <h2>Imagine. Escolha.<br><em>Encante-se.</em></h2>
+        <p>Preencha seus dados e conte um pouco sobre o ensaio que deseja criar. Nossa equipe entrará em contato para orientar você sobre as opções e os próximos passos.</p>
+        <div class="order-assurance"><span>✦</span><div><b>Atendimento personalizado</b><small>Vamos ajudar você a escolher a melhor proposta.</small></div></div>
+      </div>
+      <form class="order-form" id="orderForm">
+        <h3>Conte sua ideia</h3>
+        <label for="name">Seu nome</label>
+        <input id="name" name="name" type="text" placeholder="Como podemos chamar você?" required>
+        <label for="email">Seu e-mail</label>
+        <input id="email" name="email" type="email" placeholder="voce@email.com">
+        <label for="style">Estilo de ensaio</label>
+        <select id="style" name="style" required>
+          <option value="">Selecione uma opção</option>
+          <option>Retrato clássico</option><option>Editorial moderno</option><option>Ensaio especial</option><option>Quero uma ideia personalizada</option>
+        </select>
+        <label for="details">Como você imagina suas fotos?</label>
+        <textarea id="details" name="details" rows="3" placeholder="Ex.: cenário, roupa, ocasião, quantidade de fotos..."></textarea>
+        <label class="upload-label" for="reference">Foto de referência (opcional)</label>
+        <input id="reference" name="reference" type="file" accept="image/*">
+        <small class="form-note">Nesta primeira versão, o formulário é uma demonstração. O envio seguro de fotos será ativado junto com o sistema de pedidos.</small>
+        <button class="button button-primary submit-button" type="submit">Preparar meu pedido <span>↗</span></button>
+        <p class="form-feedback" id="formFeedback" role="status"></p>
+      </form>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <a class="brand" href="#"><span class="brand-mark">L<span>✦</span>C</span><span class="brand-name">ESTÚDIO <b>LUZ E COR</b></span></a>
+    <p>Suas ideias, novos olhares.</p>
+    <small>© <span id="year"></span> Estúdio Luz e Cor. Todos os direitos reservados.</small>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>

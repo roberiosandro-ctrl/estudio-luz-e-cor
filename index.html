@@ -29,36 +29,106 @@
       <div class="hero-copy">
         <span class="eyebrow"><i></i> FOTOGRAFIA CRIATIVA COM IA</span>
         <h1>Uma nova versão<br>de <em>você.</em></h1>
-        <p>Transforme suas ideias em fotos incríveis. Escolha o estilo, envie sua foto e imagine as possibilidades.</p>
+        <p>Transforme suas ideias em fotos incríveis. Escolha o estilo, envie suas fotos e imagine as possibilidades.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="#pedido">Quero criar minhas fotos <span>↗</span></a>
-          <a class="text-link" href="#ensaios">Conhecer os estilos</a>
+          <a class="button button-primary" href="#ensaios">Escolher meu ensaio <span>↗</span></a>
+          <a class="text-link" href="#como-funciona">Como funciona</a>
         </div>
         <div class="hero-note"><span class="sparkle">✦</span> Seu ensaio personalizado, sem precisar sair de casa.</div>
       </div>
       <div class="hero-art">
-        <div class="hero-photo photo-main" role="img" aria-label="Retrato feminino em ensaio fotográfico editorial"></div>
-        <div class="hero-photo photo-small" role="img" aria-label="Retrato em estilo fotográfico"></div>
+        <div class="hero-photo photo-main" role="img" aria-label="Imagem ilustrativa de retrato feminino em ensaio fotográfico editorial"></div>
+        <div class="hero-photo photo-small" role="img" aria-label="Imagem ilustrativa de retrato em estilo fotográfico"></div>
         <div class="photo-label"><span>SEU ESTILO.</span><b>SUA HISTÓRIA.</b></div>
         <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
       </div>
     </section>
 
-    <section class="intro-strip">
+    <section class="intro-strip" aria-label="Conceito do Estúdio Luz e Cor">
       <span>CRIATIVIDADE</span><b>✦</b><span>PERSONALIDADE</span><b>✦</b><span>SEU MELHOR ÂNGULO</span><b>✦</b><span>ESTÚDIO LUZ E COR</span>
     </section>
 
     <section class="section styles-section" id="ensaios">
       <div class="section-heading">
         <div><span class="eyebrow">ENCONTRE SEU ESTILO</span><h2>Qual ensaio combina<br>com você?</h2></div>
-        <p>Inspire-se em algumas possibilidades e escolha a proposta que mais tem a sua cara.</p>
+        <p>Explore as categorias, encontre sua inspiração e escolha a proposta que mais tem a sua cara.</p>
       </div>
-      <div class="style-grid">
-        <article class="style-card style-one"><div class="style-image"></div><div class="style-caption"><span>01 / ELEGÂNCIA</span><h3>Retrato clássico</h3></div></article>
-        <article class="style-card style-two"><div class="style-image"></div><div class="style-caption"><span>02 / PERSONALIDADE</span><h3>Editorial moderno</h3></div></article>
-        <article class="style-card style-three"><div class="style-image"></div><div class="style-caption"><span>03 / MOMENTOS</span><h3>Ensaio especial</h3></div></article>
+
+      <div class="catalog-tools">
+        <label class="visually-hidden" for="categorySearch">Buscar categoria</label>
+        <input id="categorySearch" class="catalog-search" type="search" placeholder="Buscar ensaio ou ocasião..." autocomplete="off">
+        <div class="catalog-filters" role="group" aria-label="Filtrar categorias">
+          <button class="filter-button is-active" type="button" data-filter="todos" aria-pressed="true">Todos</button>
+          <button class="filter-button" type="button" data-filter="retratos" aria-pressed="false">Retratos</button>
+          <button class="filter-button" type="button" data-filter="ocasioes" aria-pressed="false">Ocasiões</button>
+          <button class="filter-button" type="button" data-filter="familia" aria-pressed="false">Família e datas</button>
+        </div>
       </div>
-      <p class="gallery-disclaimer">Imagens ilustrativas de estilos. O resultado final é personalizado conforme as informações e fotos enviadas.</p>
+
+      <div class="category-grid" id="categoryGrid">
+        <article class="category-card" data-group="ocasioes" data-search="paisagens natureza viagem campo montanha">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Paisagem natural ilustrativa"></div>
+          <div class="category-caption"><span>01 / NATUREZA</span><h3>Paisagens e natureza</h3><p>Cenários ao ar livre e destinos especiais.</p><button type="button" class="category-choose" data-category="paisagens">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="ocasioes" data-search="casamento noivado noiva noivo romance">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Casamento ilustrativo"></div>
+          <div class="category-caption"><span>02 / CELEBRAÇÃO</span><h3>Casamento e noivado</h3><p>Registros românticos para momentos únicos.</p><button type="button" class="category-choose" data-category="casamento">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="ocasioes" data-search="dia dos namorados amor casal romance">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Casal em momento romântico ilustrativo"></div>
+          <div class="category-caption"><span>03 / AMOR</span><h3>Dia dos Namorados</h3><p>Uma lembrança criativa para celebrar a dois.</p><button type="button" class="category-choose" data-category="namorados">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="ocasioes" data-search="aniversário festa comemoração">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Decoração de festa ilustrativa"></div>
+          <div class="category-caption"><span>04 / COMEMORAÇÃO</span><h3>Aniversário</h3><p>Um ensaio especial para celebrar sua data.</p><button type="button" class="category-choose" data-category="aniversario">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="retratos" data-search="ensaio feminino mulher beleza retrato">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Retrato feminino ilustrativo"></div>
+          <div class="category-caption"><span>05 / RETRATO</span><h3>Ensaio feminino</h3><p>Beleza, atitude e personalidade em cada foto.</p><button type="button" class="category-choose" data-category="feminino">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="retratos" data-search="ensaio masculino homem retrato">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Retrato masculino ilustrativo"></div>
+          <div class="category-caption"><span>06 / RETRATO</span><h3>Ensaio masculino</h3><p>Estilo e presença em imagens marcantes.</p><button type="button" class="category-choose" data-category="masculino">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="retratos" data-search="ensaio casal namoro amor juntos">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Ensaio de casal ilustrativo"></div>
+          <div class="category-caption"><span>07 / CONEXÃO</span><h3>Ensaio de casal</h3><p>Fotos que contam a história de vocês.</p><button type="button" class="category-choose" data-category="casal">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="retratos" data-search="profissional corporativo currículo trabalho linkedin">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Retrato profissional ilustrativo"></div>
+          <div class="category-caption"><span>08 / CARREIRA</span><h3>Ensaio profissional</h3><p>Uma imagem alinhada à sua marca pessoal.</p><button type="button" class="category-choose" data-category="profissional">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="ocasioes" data-search="praia verão mar férias">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Praia e mar ilustrativos"></div>
+          <div class="category-caption"><span>09 / VERÃO</span><h3>Praia e verão</h3><p>Leveza, sol e clima de férias.</p><button type="button" class="category-choose" data-category="praia">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="familia" data-search="natal natalino festas dezembro">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1512389142860-9c449e58a543?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Decoração natalina ilustrativa"></div>
+          <div class="category-caption"><span>10 / FESTAS</span><h3>Natal</h3><p>Um clima especial para guardar de lembrança.</p><button type="button" class="category-choose" data-category="natal">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="familia" data-search="ano novo réveillon virada celebração">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Fogos de artifício ilustrativos"></div>
+          <div class="category-caption"><span>11 / RECOMEÇO</span><h3>Ano Novo</h3><p>Comece um novo ciclo com fotos especiais.</p><button type="button" class="category-choose" data-category="ano-novo">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="familia" data-search="família filhos pais mãe pai">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Família em momento afetivo ilustrativo"></div>
+          <div class="category-caption"><span>12 / AFETO</span><h3>Família</h3><p>Momentos e conexões que merecem ser lembrados.</p><button type="button" class="category-choose" data-category="familia">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="retratos" data-search="moda luxo editorial fashion">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Ensaio de moda ilustrativo"></div>
+          <div class="category-caption"><span>13 / EDITORIAL</span><h3>Moda e luxo</h3><p>Produções sofisticadas e cheias de estilo.</p><button type="button" class="category-choose" data-category="moda">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="retratos" data-search="gestante gravidez maternidade bebê">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Maternidade ilustrativa"></div>
+          <div class="category-caption"><span>14 / MATERNIDADE</span><h3>Gestante</h3><p>Uma fase única registrada com delicadeza.</p><button type="button" class="category-choose" data-category="gestante">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+        <article class="category-card" data-group="familia" data-search="infantil criança bebê aniversário">
+          <div class="category-image" style="background-image:url('https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800&auto=format&fit=crop&q=85')" role="img" aria-label="Retrato infantil ilustrativo"></div>
+          <div class="category-caption"><span>15 / INFÂNCIA</span><h3>Infantil</h3><p>Imaginação e alegria em cada detalhe.</p><button type="button" class="category-choose" data-category="infantil">Quero esse ensaio <span>↗</span></button></div>
+        </article>
+      </div>
+      <p class="gallery-disclaimer">Todas as imagens desta galeria são ilustrativas e servem como referência de estilo. Os ensaios finais serão personalizados.</p>
+      <p class="catalog-empty" id="catalogEmpty" hidden>Nenhuma categoria encontrada. Tente outra busca.</p>
     </section>
 
     <section class="how-section" id="como-funciona">
@@ -66,9 +136,9 @@
         <span class="eyebrow">SIMPLES ASSIM</span>
         <h2>Seu ensaio em<br><em>poucos passos.</em></h2>
         <div class="steps">
-          <div class="step"><span>01</span><h3>Escolha o estilo</h3><p>Selecione a inspiração para suas fotos.</p></div>
-          <div class="step"><span>02</span><h3>Envie sua foto</h3><p>Conte como gostaria que seu ensaio fosse.</p></div>
-          <div class="step"><span>03</span><h3>Receba seu resultado</h3><p>Após a confirmação do pedido, combinamos a entrega com você.</p></div>
+          <div class="step"><span>01</span><h3>Escolha o estilo</h3><p>Explore as categorias e selecione a inspiração para suas fotos.</p></div>
+          <div class="step"><span>02</span><h3>Conte sua ideia</h3><p>Informe suas preferências e, quando o envio estiver ativo, compartilhe suas fotos.</p></div>
+          <div class="step"><span>03</span><h3>Acompanhe seu pedido</h3><p>Após a confirmação, nossa equipe orientará você sobre os próximos passos.</p></div>
         </div>
       </div>
     </section>
@@ -77,27 +147,43 @@
       <div class="order-copy">
         <span class="eyebrow">VAMOS COMEÇAR?</span>
         <h2>Imagine. Escolha.<br><em>Encante-se.</em></h2>
-        <p>Preencha seus dados e conte um pouco sobre o ensaio que deseja criar. Nossa equipe entrará em contato para orientar você sobre as opções e os próximos passos.</p>
+        <p>Escolha uma categoria e conte um pouco sobre o ensaio que deseja criar. Esta etapa é uma prévia: o recebimento real de pedidos será ativado depois que o sistema seguro estiver conectado.</p>
         <div class="order-assurance"><span>✦</span><div><b>Atendimento personalizado</b><small>Vamos ajudar você a escolher a melhor proposta.</small></div></div>
       </div>
       <form class="order-form" id="orderForm">
         <h3>Conte sua ideia</h3>
         <label for="name">Seu nome</label>
-        <input id="name" name="name" type="text" placeholder="Como podemos chamar você?" required>
-        <label for="email">Seu e-mail</label>
-        <input id="email" name="email" type="email" placeholder="voce@email.com">
-        <label for="style">Estilo de ensaio</label>
+        <input id="name" name="name" type="text" placeholder="Como podemos chamar você?" autocomplete="name" required>
+        <label for="email">Seu e-mail (opcional)</label>
+        <input id="email" name="email" type="email" placeholder="voce@email.com" autocomplete="email">
+        <label for="phone">Seu WhatsApp (opcional)</label>
+        <input id="phone" name="phone" type="tel" placeholder="(00) 00000-0000" autocomplete="tel">
+        <label for="style">Categoria do ensaio</label>
         <select id="style" name="style" required>
-          <option value="">Selecione uma opção</option>
-          <option>Retrato clássico</option><option>Editorial moderno</option><option>Ensaio especial</option><option>Quero uma ideia personalizada</option>
+          <option value="">Selecione uma categoria</option>
+          <option value="paisagens">Paisagens e natureza</option>
+          <option value="casamento">Casamento e noivado</option>
+          <option value="namorados">Dia dos Namorados</option>
+          <option value="aniversario">Aniversário</option>
+          <option value="feminino">Ensaio feminino</option>
+          <option value="masculino">Ensaio masculino</option>
+          <option value="casal">Ensaio de casal</option>
+          <option value="profissional">Ensaio profissional</option>
+          <option value="praia">Praia e verão</option>
+          <option value="natal">Natal</option>
+          <option value="ano-novo">Ano Novo</option>
+          <option value="familia">Família</option>
+          <option value="moda">Moda e luxo</option>
+          <option value="gestante">Gestante</option>
+          <option value="infantil">Infantil</option>
         </select>
         <label for="details">Como você imagina suas fotos?</label>
         <textarea id="details" name="details" rows="3" placeholder="Ex.: cenário, roupa, ocasião, quantidade de fotos..."></textarea>
-        <label class="upload-label" for="reference">Foto de referência (opcional)</label>
-        <input id="reference" name="reference" type="file" accept="image/*">
-        <small class="form-note">Nesta primeira versão, o formulário é uma demonstração. O envio seguro de fotos será ativado junto com o sistema de pedidos.</small>
-        <button class="button button-primary submit-button" type="submit">Preparar meu pedido <span>↗</span></button>
-        <p class="form-feedback" id="formFeedback" role="status"></p>
+        <label class="upload-label" for="reference">Fotos de referência (até 5, envio ainda não ativado)</label>
+        <input id="reference" name="reference" type="file" accept="image/jpeg,image/png,image/webp" multiple disabled>
+        <small class="form-note">O formulário ainda é uma demonstração e não registra pedidos nem envia arquivos. Não selecione nem envie fotos pessoais nesta etapa.</small>
+        <button class="button button-primary submit-button" type="submit">Ver prévia do pedido <span>↗</span></button>
+        <p class="form-feedback" id="formFeedback" role="status" aria-live="polite"></p>
       </form>
     </section>
   </main>

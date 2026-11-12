@@ -116,7 +116,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $function$
 begin
   if tg_op = 'INSERT' then
     insert into public.status_history (order_id, previous_status, new_status, changed_by)
@@ -127,7 +127,7 @@ begin
   end if;
   return new;
 end;
-$;
+$function$;
 
 revoke all on function public.record_order_status_change() from public;
 

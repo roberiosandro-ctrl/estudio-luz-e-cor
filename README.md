@@ -32,6 +32,29 @@ O servidor Express + TypeScript fica em `server/src`.
 
 A configuração atual exige `OPENAI_ENABLED=false`; tentar ativar a geração nesta fase impede a inicialização do servidor. A rota de saúde informa explicitamente que pedidos, upload e geração ainda estão desativados.
 
+## Banco de dados Supabase
+
+A migração inicial está em `supabase/migrations/0001_initial_schema.sql`.
+
+Ela prepara:
+
+- 15 categorias iniciais.
+- Pedidos com chave de idempotência e estados controlados.
+- Metadados de arquivos de referência e imagens geradas.
+- Histórico automático de mudanças de status.
+- Registros de geração para acompanhamento futuro.
+- Cadastro de usuários administrativos vinculado ao Supabase Auth.
+- Buckets privados `fotos-referencia` e `fotos-geradas`.
+- Políticas RLS: categorias ativas podem ser consultadas publicamente; pedidos e arquivos não ficam abertos ao público.
+
+### Atenção antes de executar
+
+A migração foi salva no repositório, mas **ainda não foi executada em nenhum projeto Supabase**. Primeiro crie/seleciona-se um projeto de desenvolvimento e confira o SQL. Não use dados reais de clientes durante os testes.
+
+Para cadastrar o primeiro administrador, depois de criar o usuário no Supabase Auth, um responsável deverá inserir o UUID desse usuário em `public.admin_users` pelo SQL Editor do projeto. Não compartilhe senhas ou chaves no GitHub ou nesta conversa.
+
+A chave `service_role` deve existir somente no backend, como variável secreta de ambiente. Nunca a coloque no HTML, JavaScript do navegador ou repositório.
+
 ## Próximas etapas planejadas
 
 1. Revisar visualmente o catálogo em desktop e celular.

@@ -19,6 +19,19 @@ Esta é a branch de desenvolvimento do MVP. A branch `main` e o site atualmente 
 
 Paisagens e natureza, casamento e noivado, Dia dos Namorados, aniversário, ensaio feminino, ensaio masculino, ensaio de casal, ensaio profissional, praia e verão, Natal, Ano Novo, família, moda e luxo, gestante e infantil.
 
+## Backend inicial
+
+O servidor Express + TypeScript fica em `server/src`.
+
+- `npm run dev`: inicia o servidor em modo de desenvolvimento.
+- `npm run typecheck`: verifica os tipos TypeScript.
+- `npm run build`: gera a saída em `dist`.
+- `npm start`: inicia a versão compilada.
+- `GET /api/health`: rota simples de verificação da API.
+- `.env.example`: exemplo de configuração local, sem segredos.
+
+A configuração atual exige `OPENAI_ENABLED=false`; tentar ativar a geração nesta fase impede a inicialização do servidor. A rota de saúde informa explicitamente que pedidos, upload e geração ainda estão desativados.
+
 ## Próximas etapas planejadas
 
 1. Revisar visualmente o catálogo em desktop e celular.

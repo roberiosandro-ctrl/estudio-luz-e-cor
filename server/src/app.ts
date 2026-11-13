@@ -2,7 +2,8 @@ import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import { allowedOrigins } from "./config/env.js";
+import { allowedOrigins, supabaseConfigured } from "./config/env.js";
+import { supabaseAdmin } from "./config/supabase.js";
 
 export const app = express();
 
@@ -38,11 +39,27 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 
-app.get("/api/health", (_request, response) => {
-  response.status(200).json({
-    status: "ok",
+app.get("/api/health", async (_request, response) => {
+  let database: "connected" | "not_configured" | "unavailable" = "not_configured";
+
+  if (supabaseConfigured && supabaseAdmin) {
+    const { error } = await supabaseAdmin
+      .from("categories")
+      .select("slug", { head: true, count: "exact" });
+
+    if (error) {
+      database = "unavailable";
+      console.error("Verificação de conexão com Supabase falhou:", error.message);
+    } else {
+      database = "connected";
+    }
+  }
+
+  response.status(database === "unavailable" ? 503 : 200).json({
+    status: database === "unavailable" ? "degraded" : "ok",
     service: "estudio-luz-e-cor-api",
     timestamp: new Date().toISOString(),
+    database,
     features: {
       orderSubmission: false,
       photoUpload: false,

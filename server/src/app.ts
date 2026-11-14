@@ -1,3 +1,4 @@
+import { resolve } from "node:path";
 import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
 import rateLimit from "express-rate-limit";
@@ -8,7 +9,24 @@ import { supabaseAdmin } from "./config/supabase.js";
 export const app = express();
 
 app.disable("x-powered-by");
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        baseUri: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+        formAction: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https://images.unsplash.com"],
+        connectSrc: ["'self'"],
+      },
+    },
+  }),
+);
 app.use(
   cors({
     origin(origin, callback) {
@@ -65,6 +83,27 @@ app.get("/api/health", async (_request, response) => {
       photoUpload: false,
       imageGeneration: false,
     },
+  });
+});
+
+// Entrega somente os três arquivos públicos da interface.
+// Não exponha a raiz do repositório com express.static, pois ela contém código
+// do servidor e arquivos de configuração.
+app.get("/", (_request, response, next) => {
+  response.sendFile(resolve(process.cwd(), "index.html"), (error) => {
+    if (error) next(error);
+  });
+});
+
+app.get("/styles.css", (_request, response, next) => {
+  response.sendFile(resolve(process.cwd(), "styles.css"), (error) => {
+    if (error) next(error);
+  });
+});
+
+app.get("/script.js", (_request, response, next) => {
+  response.sendFile(resolve(process.cwd(), "script.js"), (error) => {
+    if (error) next(error);
   });
 });
 

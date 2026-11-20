@@ -66,3 +66,20 @@ img[src$="assets/FASH-02.webp"],img[src$="assets/FASH-04.webp"]{object-fit:conta
  .final-cta h2{font-size:40px}
  .footer{padding:24px 20px}
 }
+
+/* Correção de enquadramento das fotografias */
+.hero-visual::before{
+  content:none;
+  background:none;
+  border:0;
+}
+.hero-image-frame img{
+  object-fit:cover;
+  object-position:center top;
+}
+.model-image-button img{
+  object-position:center top;
+}
+#lightboxImage{
+  object-fit:contain;
+}

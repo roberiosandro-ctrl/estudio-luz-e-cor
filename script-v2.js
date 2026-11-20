@@ -267,7 +267,24 @@
 
   requestButton?.addEventListener("click", () => {
     if (!selected.size) return;
-    showToast("O WhatsApp do estúdio ainda precisa ser configurado para receber sua seleção.");
+
+    const lines = Array.from(selected.values()).map((model) =>
+      `• ${model.code} — ${model.title} (${model.collection})`
+    );
+    const message = [
+      "Olá! Gostaria de solicitar atendimento no Estúdio Luz e Cor.",
+      "",
+      "Estes são os estilos que selecionei:",
+      ...lines,
+      "",
+      "Podem me passar as informações dos pacotes e valores?"
+    ].join("\n");
+    const whatsappUrl = `https://wa.me/5548998336779?text=${encodeURIComponent(message)}`;
+    const whatsappWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+
+    if (!whatsappWindow) {
+      window.location.href = whatsappUrl;
+    }
   });
 
   closeLightbox?.addEventListener("click", () => setLightbox(false));

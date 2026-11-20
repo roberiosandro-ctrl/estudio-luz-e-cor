@@ -3,36 +3,182 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Conheça as coleções do Estúdio Luz e Cor e escolha suas referências de ensaio fotográfico.">
+  <meta name="description" content="Conheça o Estúdio Luz e Cor. Escolha referências de ensaios fotográficos com inteligência artificial e fale com nosso atendimento.">
   <meta name="theme-color" content="#11100f">
-  <title>Estúdio Luz e Cor | Catálogo de Ensaios</title>
+  <title>Estúdio Luz e Cor | Ensaios Fotográficos com IA</title>
   <link rel="stylesheet" href="styles-v2.css">
   <link rel="stylesheet" href="ajustes-v2.css">
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="#inicio" aria-label="Estúdio Luz e Cor">
+    <a class="brand" href="#inicio" aria-label="Estúdio Luz e Cor — início">
       <span class="brand-symbol">L<span>&</span>C</span>
-      <span class="brand-copy"><strong>Estúdio Luz e Cor</strong><small>CATÁLOGO DE ENSAIOS</small></span>
+      <span class="brand-copy"><strong>Estúdio Luz e Cor</strong><small>ENSAIOS FOTOGRÁFICOS COM IA</small></span>
     </a>
-    <button class="selection-trigger" id="openSelection" type="button" aria-expanded="false" aria-controls="selectionPanel">Minha seleção <span id="selectionCount">0</span></button>
+
+    <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="primaryNav">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="main-nav" id="primaryNav" aria-label="Navegação principal">
+      <a href="#inicio">Início</a>
+      <a href="#colecoes">Coleções</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#pacotes">Pacotes</a>
+      <a href="#inspiracoes">Inspirações</a>
+      <a href="#duvidas">Dúvidas</a>
+    </nav>
+
+    <div class="topbar-actions">
+      <button class="selection-trigger" id="openSelection" type="button" aria-expanded="false" aria-controls="selectionPanel">Minha seleção <span id="selectionCount">0</span></button>
+      <a class="nav-whatsapp" href="https://wa.me/5548998336779?text=Ol%C3%A1%21%20Quero%20conhecer%20os%20ensaios%20fotogr%C3%A1ficos%20com%20IA%20do%20Est%C3%BAdio%20Luz%20e%20Cor." target="_blank" rel="noopener noreferrer">WhatsApp <span aria-hidden="true">↗</span></a>
+    </div>
   </header>
 
   <main id="inicio">
     <section class="hero">
       <div class="hero-content">
-        <p class="kicker">CATÁLOGO DE ENSAIOS</p>
-        <h1>Uma imagem.<br><em>Uma presença.</em></h1>
-        <p class="hero-description">Dez coleções autorais para criar retratos sofisticados, expressivos e fiéis ao seu estilo.</p>
-        <a class="gold-button" href="#catalogo">Conhecer estilos <span>↓</span></a>
+        <p class="kicker">ESTÚDIO LUZ E COR · ENSAIOS COM IA</p>
+        <h1>Suas fotos.<br><em>Uma nova forma de se ver.</em></h1>
+        <p class="hero-description">Escolha o estilo que combina com você e transforme sua ideia em um ensaio fotográfico criado com inteligência artificial — com praticidade e personalidade.</p>
+        <div class="hero-actions">
+          <a class="gold-button" href="#colecoes">Escolher meu estilo <span>↓</span></a>
+          <a class="text-button" href="https://wa.me/5548998336779?text=Ol%C3%A1%21%20Quero%20saber%20como%20funcionam%20os%20ensaios%20com%20IA." target="_blank" rel="noopener noreferrer">Falar com o estúdio <span>↗</span></a>
+        </div>
+        <div class="hero-proof"><span class="proof-dot"></span><span>10 coleções</span><i></i><span>60 estilos para explorar</span></div>
       </div>
-      <div class="hero-stat"><strong>60</strong><span>ESTILOS<br>DISPONÍVEIS</span></div>
+      <div class="hero-visual">
+        <div class="hero-image-frame">
+          <img src="assets/ELEG-01.jpg" alt="Referência de ensaio fotográfico da coleção elegante" fetchpriority="high">
+        </div>
+        <div class="hero-image-note"><span>01 / 10</span><strong>Encontre seu estilo</strong></div>
+        <div class="hero-ornament" aria-hidden="true"></div>
+      </div>
     </section>
 
-    <div id="catalogo" aria-live="polite"></div>
+    <section class="intro-strip" aria-label="Sobre o catálogo">
+      <p>Uma seleção de referências para inspirar seu próximo ensaio.</p>
+      <span>EXPLORE · ESCOLHA · PERSONALIZE</span>
+    </section>
+
+    <section class="catalog-section page-section" id="colecoes">
+      <div class="section-heading">
+        <p class="kicker">ENCONTRE SUA INSPIRAÇÃO</p>
+        <h2>Qual estilo combina <em>com você?</em></h2>
+        <p>Explore nossas coleções, amplie as imagens e adicione seus modelos favoritos à seleção. Depois, envie tudo para o atendimento pelo WhatsApp.</p>
+      </div>
+      <div id="catalogo" aria-live="polite"></div>
+    </section>
+
+    <section class="how-section page-section" id="como-funciona">
+      <div class="section-heading section-heading-centered">
+        <p class="kicker">SIMPLES DE COMEÇAR</p>
+        <h2>Seu ensaio em <em>3 passos.</em></h2>
+        <p>Da escolha das referências ao alinhamento do seu pedido, tudo começa com uma conversa.</p>
+      </div>
+      <div class="steps-grid">
+        <article class="step-card">
+          <span class="step-number">01</span>
+          <div class="step-icon" aria-hidden="true">✳</div>
+          <h3>Escolha seus estilos</h3>
+          <p>Navegue pelas coleções, amplie as imagens e selecione as referências que mais combinam com a ideia do seu ensaio.</p>
+        </article>
+        <article class="step-card">
+          <span class="step-number">02</span>
+          <div class="step-icon" aria-hidden="true">↗</div>
+          <h3>Converse com o estúdio</h3>
+          <p>Envie sua seleção pelo WhatsApp. Nossa equipe conversa com você sobre as opções, os pacotes e as próximas etapas.</p>
+        </article>
+        <article class="step-card">
+          <span class="step-number">03</span>
+          <div class="step-icon" aria-hidden="true">✧</div>
+          <h3>Alinhe seu ensaio</h3>
+          <p>Com as referências escolhidas, você recebe as orientações para dar continuidade ao seu pedido e criar seu ensaio com IA.</p>
+        </article>
+      </div>
+      <div class="section-cta"><a class="gold-button" href="https://wa.me/5548998336779?text=Ol%C3%A1%21%20Quero%20come%C3%A7ar%20meu%20ensaio%20com%20IA." target="_blank" rel="noopener noreferrer">Quero começar <span>↗</span></a></div>
+    </section>
+
+    <section class="packages-section page-section" id="pacotes">
+      <div class="packages-copy">
+        <p class="kicker">ENCONTRE A OPÇÃO IDEAL</p>
+        <h2>Um ensaio pensado <em>para sua ideia.</em></h2>
+        <p>Os formatos podem variar conforme a quantidade de imagens e o estilo escolhido. Converse com o estúdio para conhecer os pacotes disponíveis e receber os valores atualizados.</p>
+        <a class="gold-button" href="https://wa.me/5548998336779?text=Ol%C3%A1%21%20Quero%20conhecer%20os%20pacotes%20e%20valores%20dos%20ensaios." target="_blank" rel="noopener noreferrer">Consultar pacotes <span>↗</span></a>
+      </div>
+      <div class="package-panel">
+        <span class="package-label">ATENDIMENTO PERSONALIZADO</span>
+        <div class="package-emblem" aria-hidden="true">L<span>&</span>C</div>
+        <h3>Seu estilo. Sua escolha.</h3>
+        <p>Escolha suas referências e fale com a gente para encontrar o formato de ensaio mais adequado ao que você procura.</p>
+        <ul>
+          <li><span>✓</span> Diversas coleções e estilos</li>
+          <li><span>✓</span> Seleção de referências pelo catálogo</li>
+          <li><span>✓</span> Atendimento direto pelo WhatsApp</li>
+        </ul>
+        <a href="https://wa.me/5548998336779?text=Ol%C3%A1%21%20Quero%20receber%20informa%C3%A7%C3%B5es%20sobre%20os%20pacotes." target="_blank" rel="noopener noreferrer">Conversar sobre meu ensaio <span>↗</span></a>
+      </div>
+    </section>
+
+    <section class="inspiration-section page-section" id="inspiracoes">
+      <div class="section-heading">
+        <p class="kicker">UM POUCO DO QUE VOCÊ PODE EXPLORAR</p>
+        <h2>Inspirações para <em>seu próximo ensaio.</em></h2>
+        <p>Veja algumas referências do catálogo. As imagens representam estilos e propostas visuais, não resultados personalizados de clientes.</p>
+      </div>
+      <div class="inspiration-grid" id="inspirationGrid" aria-live="polite"></div>
+      <div class="section-cta"><a class="outline-button" href="#colecoes">Ver todas as coleções <span>↓</span></a></div>
+    </section>
+
+    <section class="faq-section page-section" id="duvidas">
+      <div class="faq-intro">
+        <p class="kicker">ANTES DE COMEÇAR</p>
+        <h2>Ficou com <em>alguma dúvida?</em></h2>
+        <p>Reunimos algumas respostas para ajudar você a conhecer melhor o catálogo e o atendimento.</p>
+        <a class="text-button" href="https://wa.me/5548998336779?text=Ol%C3%A1%21%20Tenho%20uma%20d%C3%BAvida%20sobre%20os%20ensaios%20com%20IA." target="_blank" rel="noopener noreferrer">Perguntar pelo WhatsApp <span>↗</span></a>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>As imagens do catálogo são os resultados finais?</summary>
+          <p>Não. Elas são referências visuais para ajudar você a escolher o estilo e a proposta do seu ensaio.</p>
+        </details>
+        <details>
+          <summary>Como faço para escolher meus modelos?</summary>
+          <p>Use o botão “Adicionar à seleção” em cada modelo. Você pode escolher mais de uma referência e enviar a lista pelo WhatsApp.</p>
+        </details>
+        <details>
+          <summary>Os ensaios são criados com inteligência artificial?</summary>
+          <p>Sim. A proposta do Estúdio Luz e Cor é criar ensaios fotográficos com o auxílio de inteligência artificial, a partir das referências alinhadas no atendimento.</p>
+        </details>
+        <details>
+          <summary>Como envio minhas fotos de referência?</summary>
+          <p>Depois de conversar com o estúdio e alinhar seu pedido, você recebe as orientações para o envio das fotos pelo canal combinado no atendimento.</p>
+        </details>
+        <details>
+          <summary>Quais são os pacotes e valores?</summary>
+          <p>As opções e os valores atualizados são informados diretamente pelo WhatsApp, conforme o formato de ensaio que você procura.</p>
+        </details>
+        <details>
+          <summary>Posso escolher estilos de coleções diferentes?</summary>
+          <p>Sim. Você pode adicionar referências de diferentes coleções à sua seleção e enviar tudo junto para conversar com o estúdio.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="final-cta">
+      <p class="kicker">ESTÚDIO LUZ E COR</p>
+      <h2>Você já encontrou as referências.<br><em>Agora vamos conversar?</em></h2>
+      <p>Escolha seus estilos favoritos e dê o primeiro passo para criar seu ensaio com IA.</p>
+      <a class="gold-button" href="https://wa.me/5548998336779?text=Ol%C3%A1%21%20Quero%20fazer%20meu%20ensaio%20com%20IA%20no%20Est%C3%BAdio%20Luz%20e%20Cor." target="_blank" rel="noopener noreferrer">Falar com o estúdio <span>↗</span></a>
+    </section>
   </main>
 
-  <footer class="footer"><span>Estúdio Luz e Cor</span><span>Catálogo de ensaios · 10 coleções</span></footer>
+  <footer class="footer">
+    <div class="footer-brand"><span class="brand-symbol">L<span>&</span>C</span><div><strong>Estúdio Luz e Cor</strong><small>ENSAIOS FOTOGRÁFICOS COM IA</small></div></div>
+    <p>Referências para criar um ensaio com a sua identidade.</p>
+    <a href="https://wa.me/5548998336779?text=Ol%C3%A1%21%20Quero%20conhecer%20o%20Est%C3%BAdio%20Luz%20e%20Cor." target="_blank" rel="noopener noreferrer">Atendimento pelo WhatsApp ↗</a>
+    <small>© <span id="currentYear">2026</span> Estúdio Luz e Cor</small>
+  </footer>
 
   <div class="lightbox" id="lightbox" aria-hidden="true">
     <button class="lightbox-close" id="closeLightbox" type="button" aria-label="Fechar imagem ampliada">×</button>
@@ -42,7 +188,7 @@
   <aside class="selection-panel" id="selectionPanel" aria-hidden="true" inert>
     <div class="panel-header"><div><p class="kicker">SUA ESCOLHA</p><h2>Modelos selecionados</h2></div><button class="panel-close" id="closeSelection" type="button" aria-label="Fechar seleção">×</button></div>
     <div class="selection-list" id="selectionList"><p class="empty-selection">Você ainda não selecionou um modelo.</p></div>
-    <div class="panel-footer"><p>Esta seleção é demonstrativa e servirá como referência para o seu atendimento.</p><button class="request-button" id="requestButton" type="button" disabled>Solicitar atendimento</button><button class="clear-button" id="clearSelection" type="button" disabled>Limpar seleção</button></div>
+    <div class="panel-footer"><p>Esta seleção servirá como referência para o seu atendimento.</p><button class="request-button" id="requestButton" type="button" disabled>Enviar seleção pelo WhatsApp</button><button class="clear-button" id="clearSelection" type="button" disabled>Limpar seleção</button></div>
   </aside>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="catalog-data-v2.js"></script>

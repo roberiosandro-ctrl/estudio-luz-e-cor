@@ -2,6 +2,7 @@
   "use strict";
 
   const catalogRoot = document.getElementById("catalogo");
+  const inspirationGrid = document.getElementById("inspirationGrid");
   const selectionPanel = document.getElementById("selectionPanel");
   const selectionList = document.getElementById("selectionList");
   const selectionCount = document.getElementById("selectionCount");
@@ -15,6 +16,8 @@
   const lightboxTitle = document.getElementById("lightboxTitle");
   const closeLightbox = document.getElementById("closeLightbox");
   const toast = document.getElementById("toast");
+  const menuToggle = document.getElementById("menuToggle");
+  const primaryNav = document.getElementById("primaryNav");
 
   const catalog = Array.isArray(window.catalogData) ? window.catalogData : [];
   const selected = new Map();
@@ -30,6 +33,13 @@
     toast.classList.add("is-visible");
     window.clearTimeout(toastTimer);
     toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 3200);
+  }
+
+  function setMenu(open) {
+    if (!menuToggle || !primaryNav) return;
+    menuToggle.setAttribute("aria-expanded", String(open));
+    menuToggle.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
+    primaryNav.classList.toggle("is-open", open);
   }
 
   function setPanel(open) {
@@ -63,7 +73,6 @@
     }
 
     const fragment = document.createDocumentFragment();
-
     catalog.forEach((collection, index) => {
       const section = document.createElement("section");
       section.className = "collection-section";
@@ -73,19 +82,16 @@
       heading.className = "collection-heading";
       const copy = document.createElement("div");
       copy.className = "collection-heading-copy";
-
       const eyebrow = document.createElement("p");
       eyebrow.className = "kicker";
       eyebrow.textContent = collection.eyebrow || collection.code || `COLEÇÃO ${String(index + 1).padStart(2, "0")}`;
-
       const title = document.createElement("h2");
       title.textContent = collection.name || "Coleção";
-
       const description = document.createElement("p");
       description.className = "collection-description";
       description.textContent = collection.description || "Escolha as referências que combinam com você.";
-
       copy.append(eyebrow, title, description);
+
       const quantity = document.createElement("span");
       quantity.className = "collection-count";
       quantity.textContent = `${Array.isArray(collection.models) ? collection.models.length : 0} estilos`;
@@ -93,7 +99,6 @@
 
       const grid = document.createElement("div");
       grid.className = "model-grid";
-
       (Array.isArray(collection.models) ? collection.models : []).forEach((model) => {
         const card = document.createElement("article");
         card.className = "model-card";
@@ -142,30 +147,60 @@
         card.append(imageButton, info, selectButton);
         grid.append(card);
       });
-
       section.append(heading, grid);
       fragment.append(section);
     });
-
     catalogRoot.replaceChildren(fragment);
+  }
+
+  function renderInspirations() {
+    if (!inspirationGrid || !catalog.length) return;
+    const preferredCodes = ["ELEG-01", "PROF-01", "ROM-01", "LUX-01", "ANIV-01", "GEST-01"];
+    const featured = preferredCodes.map((code) => {
+      for (const collection of catalog) {
+        const model = (collection.models || []).find((item) => item.code === code);
+        if (model) return { model, collection };
+      }
+      return null;
+    }).filter(Boolean);
+
+    const fragment = document.createDocumentFragment();
+    featured.forEach(({ model, collection }) => {
+      const card = document.createElement("a");
+      card.className = "inspiration-card";
+      card.href = `#${collection.id}`;
+      const image = document.createElement("img");
+      image.src = model.image || "";
+      image.alt = `Referência ${model.title || model.code} da coleção ${collection.name}`;
+      image.loading = "lazy";
+      image.decoding = "async";
+      const caption = document.createElement("span");
+      caption.className = "inspiration-caption";
+      const category = document.createElement("small");
+      category.textContent = collection.name || "Coleção";
+      const title = document.createElement("strong");
+      title.textContent = model.title || model.code;
+      caption.append(category, title);
+      card.append(image, caption);
+      fragment.append(card);
+    });
+    inspirationGrid.replaceChildren(fragment);
   }
 
   function renderSelection() {
     if (!selectionList || !selectionCount) return;
     selectionCount.textContent = String(selected.size);
     openSelection?.setAttribute("aria-label", `Minha seleção: ${selected.size} modelos`);
-
     if (!selected.size) {
       selectionList.innerHTML = '<p class="empty-selection">Você ainda não selecionou um modelo.</p>';
-      clearSelection && (clearSelection.disabled = true);
-      requestButton && (requestButton.disabled = true);
+      if (clearSelection) clearSelection.disabled = true;
+      if (requestButton) requestButton.disabled = true;
       return;
     }
 
-    clearSelection && (clearSelection.disabled = false);
-    requestButton && (requestButton.disabled = false);
+    if (clearSelection) clearSelection.disabled = false;
+    if (requestButton) requestButton.disabled = false;
     const fragment = document.createDocumentFragment();
-
     selected.forEach((model) => {
       const item = document.createElement("div");
       item.className = "selection-item";
@@ -178,7 +213,6 @@
       const collection = document.createElement("small");
       collection.textContent = model.collection;
       copy.append(code, title, collection);
-
       const remove = document.createElement("button");
       remove.type = "button";
       remove.className = "remove-selection";
@@ -189,7 +223,6 @@
       item.append(copy, remove);
       fragment.append(item);
     });
-
     selectionList.replaceChildren(fragment);
   }
 
@@ -206,7 +239,6 @@
       });
       showToast(`${model.code} adicionado à seleção.`);
     }
-
     document.querySelectorAll(".model-card").forEach((card) => {
       if (card.dataset.code !== model.code) return;
       const button = card.querySelector('[data-action="select"]');
@@ -226,13 +258,30 @@
     return null;
   }
 
+  function sendSelectionToWhatsApp() {
+    if (!selected.size) return;
+    const lines = Array.from(selected.values()).map((model) =>
+      `• ${model.code} — ${model.title} (${model.collection})`
+    );
+    const message = [
+      "Olá! Gostaria de solicitar atendimento no Estúdio Luz e Cor.",
+      "",
+      "Estas são as referências que selecionei:",
+      ...lines,
+      "",
+      "Podem me passar as informações dos pacotes, valores e próximas etapas?"
+    ].join("\n");
+    const whatsappUrl = `https://wa.me/5548998336779?text=${encodeURIComponent(message)}`;
+    const whatsappWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    if (!whatsappWindow) window.location.href = whatsappUrl;
+  }
+
   catalogRoot?.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-action]");
     if (!button) return;
     const card = button.closest(".model-card");
     const found = findModel(card?.dataset.code);
     if (!found) return;
-
     if (button.dataset.action === "select") {
       toggleSelection(found.model, found.collection.name);
     } else if (button.dataset.action === "preview") {
@@ -251,6 +300,12 @@
     if (found) toggleSelection(found.model, found.collection.name);
   });
 
+  menuToggle?.addEventListener("click", () => {
+    setMenu(menuToggle.getAttribute("aria-expanded") !== "true");
+  });
+  primaryNav?.addEventListener("click", (event) => {
+    if (event.target.closest("a")) setMenu(false);
+  });
   openSelection?.addEventListener("click", () => setPanel(true));
   closeSelection?.addEventListener("click", () => setPanel(false));
   clearSelection?.addEventListener("click", () => {
@@ -264,41 +319,23 @@
     renderSelection();
     showToast("Sua seleção foi limpa.");
   });
-
-  requestButton?.addEventListener("click", () => {
-    if (!selected.size) return;
-
-    const lines = Array.from(selected.values()).map((model) =>
-      `• ${model.code} — ${model.title} (${model.collection})`
-    );
-    const message = [
-      "Olá! Gostaria de solicitar atendimento no Estúdio Luz e Cor.",
-      "",
-      "Estes são os estilos que selecionei:",
-      ...lines,
-      "",
-      "Podem me passar as informações dos pacotes e valores?"
-    ].join("\n");
-    const whatsappUrl = `https://wa.me/5548998336779?text=${encodeURIComponent(message)}`;
-    const whatsappWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-
-    if (!whatsappWindow) {
-      window.location.href = whatsappUrl;
-    }
-  });
-
+  requestButton?.addEventListener("click", sendSelectionToWhatsApp);
   closeLightbox?.addEventListener("click", () => setLightbox(false));
   lightbox?.addEventListener("click", (event) => {
     if (event.target === lightbox) setLightbox(false);
   });
-
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     if (lightbox?.classList.contains("is-open")) setLightbox(false);
     else if (selectionPanel?.classList.contains("is-open")) setPanel(false);
+    else if (primaryNav?.classList.contains("is-open")) setMenu(false);
   });
 
+  const year = document.getElementById("currentYear");
+  if (year) year.textContent = String(new Date().getFullYear());
+  setMenu(false);
   setPanel(false);
   renderCatalog();
+  renderInspirations();
   renderSelection();
 })();

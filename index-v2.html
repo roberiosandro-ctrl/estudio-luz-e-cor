@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Catálogo Estúdio Luz e Cor, coleções de ensaios.">
+  <meta name="description" content="Conheça as coleções do Estúdio Luz e Cor e escolha suas referências de ensaio fotográfico.">
+  <meta name="theme-color" content="#11100f">
   <title>Estúdio Luz e Cor | Catálogo de Ensaios</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-v2.css">
   <link rel="stylesheet" href="ajustes-v2.css">
 </head>
 <body>
@@ -14,7 +15,7 @@
       <span class="brand-symbol">L<span>&</span>C</span>
       <span class="brand-copy"><strong>Estúdio Luz e Cor</strong><small>CATÁLOGO DE ENSAIOS</small></span>
     </a>
-    <button class="selection-trigger" id="openSelection" type="button">Minha seleção <span id="selectionCount">0</span></button>
+    <button class="selection-trigger" id="openSelection" type="button" aria-expanded="false" aria-controls="selectionPanel">Minha seleção <span id="selectionCount">0</span></button>
   </header>
 
   <main id="inicio">
@@ -23,9 +24,9 @@
         <p class="kicker">CATÁLOGO DE ENSAIOS</p>
         <h1>Uma imagem.<br><em>Uma presença.</em></h1>
         <p class="hero-description">Dez coleções autorais para criar retratos sofisticados, expressivos e fiéis ao seu estilo.</p>
-        <a class="gold-button" href="#catalogo">Conhecer modelos <span>↓</span></a>
+        <a class="gold-button" href="#catalogo">Conhecer estilos <span>↓</span></a>
       </div>
-      <div class="hero-stat"><strong>60</strong><span>MODELOS<br>DISPONÍVEIS</span></div>
+      <div class="hero-stat"><strong>60</strong><span>ESTILOS<br>DISPONÍVEIS</span></div>
     </section>
 
     <div id="catalogo" aria-live="polite"></div>
@@ -38,13 +39,13 @@
     <div class="lightbox-inner"><img id="lightboxImage" src="" alt=""><div class="lightbox-caption"><span id="lightboxCode"></span><h2 id="lightboxTitle"></h2></div></div>
   </div>
 
-  <aside class="selection-panel" id="selectionPanel" aria-hidden="true">
+  <aside class="selection-panel" id="selectionPanel" aria-hidden="true" inert>
     <div class="panel-header"><div><p class="kicker">SUA ESCOLHA</p><h2>Modelos selecionados</h2></div><button class="panel-close" id="closeSelection" type="button" aria-label="Fechar seleção">×</button></div>
     <div class="selection-list" id="selectionList"><p class="empty-selection">Você ainda não selecionou um modelo.</p></div>
-    <div class="panel-footer"><p>Esta seleção é demonstrativa e servirá como referência para o seu atendimento.</p><button class="request-button" id="requestButton" type="button">Solicitar atendimento</button><button class="clear-button" id="clearSelection" type="button">Limpar seleção</button></div>
+    <div class="panel-footer"><p>Esta seleção é demonstrativa e servirá como referência para o seu atendimento.</p><button class="request-button" id="requestButton" type="button" disabled>Solicitar atendimento</button><button class="clear-button" id="clearSelection" type="button" disabled>Limpar seleção</button></div>
   </aside>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="catalog-data-v2.js"></script>
-  <script src="script.js"></script>
+  <script src="script-v2.js"></script>
 </body>
 </html>

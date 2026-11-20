@@ -1,0 +1,21 @@
+/* ajustes-v2.css — carregado DEPOIS de styles.css, apenas pelo index-v2.html.
+   Não altera o styles.css original. */
+
+/* 1) Aviso (toast) no celular: não captura toques, não bloqueia cliques abaixo dele */
+.toast{pointer-events:none}
+
+/* 2) FASH-02 e FASH-04: fotos de corpo inteiro (cabeça no topo, sapatos na base).
+   Mostrar a imagem inteira nos cartões, sem cortar cabeça nem pés. */
+img[src$="assets/FASH-02.webp"],
+img[src$="assets/FASH-04.webp"]{
+  object-fit:contain;
+  object-position:center;
+  background:#0b0b0b;
+}
+
+/* 3) Ampliação: sempre a fotografia inteira */
+#lightboxImage{
+  object-fit:contain;
+  max-width:100%;
+  max-height:100%;
+}

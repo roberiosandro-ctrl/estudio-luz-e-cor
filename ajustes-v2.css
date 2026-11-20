@@ -83,3 +83,107 @@ img[src$="assets/FASH-02.webp"],img[src$="assets/FASH-04.webp"]{object-fit:conta
 #lightboxImage{
   object-fit:contain;
 }
+
+
+/* Identidade clara original do Estúdio Luz e Cor — preserva a estrutura V2 */
+:root{
+  color-scheme:light;
+  --ink:#211b25;
+  --muted:#766d78;
+  --gold:#b67f78;
+  --gold-light:#9b6f6a;
+  --bg:#fbf9f6;
+  --panel:#ffffff;
+  --line:#e7ddd7;
+  --plum:#493346;
+  --rose:#d7a9a1;
+}
+body{background:#fbf9f6;color:#211b25}
+body::before{background:none}
+.topbar{background:rgba(251,249,246,.96);border-bottom-color:#e7ddd7}
+.brand-symbol{border-color:#493346;color:#493346}
+.brand-symbol span{color:#c58c83}
+.brand-copy small,.footer-brand small{color:#766d78}
+.main-nav a{color:#5d535e}
+.main-nav a:hover,.main-nav a:focus-visible{color:#9b6f6a}
+.selection-trigger{color:#211b25;border-color:#e7ddd7}
+#selectionCount{background:#d7a9a1;color:#493346}
+.nav-whatsapp{background:#493346;color:#fff}
+.nav-whatsapp:hover{background:#67485e}
+.hero{background:#f6f1ec;border-bottom-color:#e7ddd7}
+.hero h1,.section-heading h2,.collection-heading h2,.packages-copy h2,.faq-intro h2,.final-cta h2{color:#211b25}
+.kicker{color:#9b6f6a}
+.hero h1 em,.section-heading h2 em,.packages-copy h2 em,.faq-intro h2 em,.final-cta h2 em{color:#b67f78}
+.hero-description{color:#766d78}
+.gold-button{background:#493346;color:#fff}
+.gold-button:hover{background:#67485e}
+.text-button{color:#9b6f6a;border-bottom-color:#d7a9a1}
+.text-button:hover{color:#493346}
+.hero-proof{color:#766d78}
+.hero-image-frame{background:#eee5df;border-color:#d7a9a1}
+.hero-image-frame::after{background:none}
+.hero-image-note{background:#fff;border-color:#e7ddd7;color:#211b25}
+.hero-image-note span{color:#9b6f6a}
+.hero-ornament{border-color:#d7a9a1}
+.intro-strip{background:#493346;border-bottom-color:#493346}
+.intro-strip p{color:#f4e9e4}
+.intro-strip span{color:#d7a9a1}
+.page-section{background:#fbf9f6}
+.collection-section{border-bottom-color:#e7ddd7}
+.collection-count{color:#9b6f6a;border-color:#e7ddd7}
+.model-card{background:#fff;border-color:#e7ddd7}
+.model-card:hover{border-color:#d7a9a1}
+.model-image-button{background:#eee5df}
+.model-info h3{color:#211b25}
+.model-code{color:#9b6f6a}
+.model-info p,.collection-description{color:#766d78}
+.model-select{border-color:#d7a9a1;color:#9b6f6a}
+.model-select:hover,.model-select.is-selected{background:#493346;color:#fff;border-color:#493346}
+.how-section{background:#eee5df;border-color:#e7ddd7}
+.step-card{background:#fff;border-color:#e7ddd7}
+.step-number{color:#b67f78}
+.step-icon{border-color:#d7a9a1;color:#9b6f6a}
+.step-card h3{color:#211b25}
+.step-card p{color:#766d78}
+.packages-section{background:#fbf9f6}
+.package-panel{background:#fff;border-color:#d7a9a1;box-shadow:0 18px 50px rgba(73,51,70,.08)}
+.package-label,.package-panel li span{color:#9b6f6a}
+.package-emblem{border-color:#b67f78;color:#9b6f6a}
+.package-panel h3{color:#211b25}
+.package-panel>p,.package-panel li{color:#766d78}
+.package-panel li{border-bottom-color:#e7ddd7}
+.package-panel>a{background:#493346;color:#fff}
+.package-panel>a:hover{background:#67485e}
+.inspiration-section{background:#fbf9f6;border-color:#e7ddd7}
+.inspiration-card{background:#fff;border-color:#e7ddd7}
+.inspiration-caption small{color:#f4d8d2}
+.faq-section{background:#fbf9f6}
+.faq-list details,.faq-list details:first-child{border-color:#e7ddd7}
+.faq-list summary{color:#211b25}
+.faq-list details p{color:#766d78}
+.final-cta{background:#f6f1ec;border-color:#e7ddd7}
+.final-cta h2{color:#211b25}
+.final-cta>p:not(.kicker){color:#766d78}
+.footer{background:#241d28;color:#e8dfe5;border-top-color:#493346}
+.footer-brand strong{color:#fff}
+.footer-brand small{color:#d1c2cf}
+.footer> a{color:#d7a9a1}
+.selection-panel{background:#fff;border-left-color:#e7ddd7;box-shadow:-20px 0 60px rgba(73,51,70,.14)}
+.panel-header{border-bottom-color:#e7ddd7}
+.panel-header h2,.selection-item strong{color:#211b25}
+.panel-close,.lightbox-close{color:#211b25;border-color:#e7ddd7}
+.selection-item{border-bottom-color:#e7ddd7}
+.selection-item small,.empty-selection,.panel-footer p{color:#766d78}
+.remove-selection{border-color:#e7ddd7;color:#766d78}
+.remove-selection:hover{color:#493346;border-color:#d7a9a1}
+.panel-footer{border-top-color:#e7ddd7}
+.request-button{background:#493346;border-color:#493346;color:#fff}
+.request-button:hover:not(:disabled){background:#67485e}
+.clear-button{border-color:#e7ddd7;color:#766d78}
+.clear-button:hover:not(:disabled){border-color:#d7a9a1;color:#493346}
+.menu-toggle{border-color:#e7ddd7;color:#211b25}
+.menu-toggle span{background:#493346}
+@media(max-width:920px){
+  .main-nav{background:#f6f1ec;border-bottom-color:#e7ddd7}
+  .main-nav a{border-bottom-color:#e7ddd7;color:#493346}
+}

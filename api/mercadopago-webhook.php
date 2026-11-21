@@ -10,6 +10,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
 
 try {
     $config = elc_load_config();
+    if (($config['payments_enabled'] ?? false) !== true) {
+        elc_json_response(200, ['ok' => true, 'ignored' => true]);
+    }
+
     $accessToken = trim((string) ($config['access_token'] ?? ''));
     $webhookSecret = trim((string) ($config['webhook_secret'] ?? ''));
     if ($accessToken === '' || $webhookSecret === '') {

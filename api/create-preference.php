@@ -6,6 +6,12 @@ elc_require_post();
 
 try {
     $config = elc_load_config();
+    if (($config['payments_enabled'] ?? false) !== true) {
+        elc_json_response(503, [
+            'ok' => false,
+            'message' => 'Os pagamentos ainda estão desativados para este projeto.',
+        ]);
+    }
     if (trim((string) ($config['access_token'] ?? '')) === '') {
         throw new RuntimeException('Credencial privada do Mercado Pago ainda não configurada.');
     }

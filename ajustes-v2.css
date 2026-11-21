@@ -187,3 +187,80 @@ body::before{background:none}
   .main-nav{background:#f6f1ec;border-bottom-color:#e7ddd7}
   .main-nav a{border-bottom-color:#e7ddd7;color:#493346}
 }
+
+
+/* Pacotes de fotos — tabela comercial do Estúdio Luz e Cor */
+.pricing-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:16px;
+  width:100%;
+  margin-top:34px;
+}
+.pricing-card{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:12px;
+  min-height:190px;
+  padding:24px 20px;
+  background:#fff;
+  border:1px solid #e7ddd7;
+  border-radius:14px;
+  box-shadow:0 10px 28px rgba(73,51,70,.045);
+}
+.pricing-quantity{
+  color:#766d78;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.12em;
+}
+.pricing-value{
+  color:#493346;
+  font-family:var(--serif);
+  font-size:clamp(25px,2.2vw,34px);
+  font-weight:400;
+  line-height:1.1;
+  white-space:nowrap;
+}
+.pricing-note{
+  color:#766d78;
+  font-size:12px;
+  line-height:1.4;
+}
+.pricing-card-featured{
+  position:relative;
+  border:1.5px solid #b67f78;
+  background:#f8f0ed;
+}
+.pricing-highlight{
+  color:#9b6f6a;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.1em;
+}
+.pricing-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  margin-top:28px;
+}
+.pricing-footer p{
+  max-width:600px;
+  margin:0;
+  color:#766d78;
+  line-height:1.6;
+}
+@media(max-width:1050px){
+  .pricing-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:680px){
+  .pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:24px}
+  .pricing-card{min-height:155px;padding:18px 14px;gap:9px}
+  .pricing-value{font-size:27px}
+  .pricing-note{font-size:11px}
+  .pricing-footer{align-items:flex-start;flex-direction:column;gap:16px}
+  .pricing-footer .gold-button{width:100%;justify-content:center}
+}

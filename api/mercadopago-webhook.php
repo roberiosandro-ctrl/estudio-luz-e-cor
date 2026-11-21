@@ -34,10 +34,12 @@ try {
         elc_json_response(200, ['ok' => true, 'ignored' => true]);
     }
 
-    $paymentId = (string) ($body['data']['id'] ?? $_GET['data.id'] ?? $_GET['id'] ?? '');
+    // A assinatura do Mercado Pago usa o data.id recebido na query string.
+    // Não aceitar o ID somente do corpo, pois isso alteraria o manifesto assinado.
+    $paymentId = trim((string) ($_GET['data.id'] ?? ''));
     $requestId = trim((string) ($_SERVER['HTTP_X_REQUEST_ID'] ?? ''));
     $signatureHeader = trim((string) ($_SERVER['HTTP_X_SIGNATURE'] ?? ''));
-    if ($paymentId === '' || $requestId === '' || $signatureHeader === '') {
+    if ($paymentId === '' || !preg_match('/^[0-9]+$/', $paymentId) || $requestId === '' || $signatureHeader === '') {
         elc_json_response(400, ['ok' => false, 'message' => 'Cabeçalhos ou identificador ausentes.']);
     }
 
@@ -50,19 +52,24 @@ try {
     }
     $timestamp = $signatureParts['ts'] ?? '';
     $receivedSignature = $signatureParts['v1'] ?? '';
-    if ($timestamp === '' || $receivedSignature === '') {
+    if ($timestamp === '' || !preg_match('/^[0-9]+$/', $timestamp)
+        || $receivedSignature === '' || !preg_match('/^[a-fA-F0-9]{64}$/', $receivedSignature)) {
         elc_json_response(401, ['ok' => false, 'message' => 'Assinatura inválida.']);
     }
 
     $manifest = 'id:' . strtolower($paymentId) . ';request-id:' . $requestId . ';ts:' . $timestamp . ';';
     $expectedSignature = hash_hmac('sha256', $manifest, $webhookSecret);
-    if (!hash_equals($expectedSignature, $receivedSignature)) {
+    if (!hash_equals($expectedSignature, strtolower($receivedSignature))) {
         elc_json_response(401, ['ok' => false, 'message' => 'Assinatura inválida.']);
     }
 
     $payment = elc_mp_request($config, 'GET', '/v1/payments/' . rawurlencode($paymentId));
+    if ((string) ($payment['id'] ?? '') !== $paymentId) {
+        elc_json_response(200, ['ok' => true, 'ignored' => true]);
+    }
+
     $externalReference = (string) ($payment['external_reference'] ?? '');
-    $paymentStatus = (string) ($payment['status'] ?? 'unknown');
+    $paymentStatus = (string) ($payment['status'] ?? '');
     if ($externalReference === '') {
         elc_json_response(200, ['ok' => true, 'ignored' => true]);
     }
@@ -76,11 +83,26 @@ try {
         elc_json_response(200, ['ok' => true, 'ignored' => true]);
     }
 
-    $expectedCents = (int) $order['amount_cents'];
-    $receivedCents = (int) round(((float) ($payment['transaction_amount'] ?? 0)) * 100);
+    if (!elc_verify_preference_binding($config, $order, $payment)) {
+        error_log('Estudio Luz e Cor: pagamento não corresponde à preferência salva no pedido.');
+        elc_json_response(200, ['ok' => true, 'ignored' => true]);
+    }
+
+    $receivedCents = elc_amount_to_cents($payment['transaction_amount'] ?? null);
     $currency = (string) ($payment['currency_id'] ?? '');
-    $amountMatches = $receivedCents === $expectedCents && $currency === 'BRL';
-    $finalStatus = $amountMatches ? $paymentStatus : 'review';
+    $amountMatches = $receivedCents !== null
+        && $receivedCents === (int) $order['amount_cents']
+        && $currency === 'BRL';
+
+    $allowedStatuses = ['pending', 'in_process', 'approved', 'rejected', 'cancelled', 'refunded', 'charged_back'];
+    $finalStatus = $amountMatches && in_array($paymentStatus, $allowedStatuses, true)
+        ? $paymentStatus
+        : 'review';
+
+    $paymentUpdatedAt = strtotime((string) ($payment['date_last_updated'] ?? ''));
+    if ($paymentUpdatedAt === false) {
+        throw new RuntimeException('Data de atualização do pagamento ausente ou inválida.');
+    }
 
     $eventKey = hash('sha256', $paymentId . '|' . $paymentStatus . '|' . (string) ($payment['date_last_updated'] ?? '') . '|' . $externalReference);
     $pdo->beginTransaction();
@@ -96,15 +118,31 @@ try {
             ':received_at' => gmdate('c'),
         ]);
 
-        $orderUpdate = $pdo->prepare(
-            'UPDATE orders SET payment_id = :payment_id, status = :status, updated_at = :updated_at WHERE id = :id'
-        );
-        $orderUpdate->execute([
-            ':payment_id' => $paymentId,
-            ':status' => $finalStatus,
-            ':updated_at' => gmdate('c'),
-            ':id' => $order['id'],
-        ]);
+        // Uma notificação repetida não reaplica a atualização do pedido.
+        if ($eventInsert->rowCount() === 1) {
+            $refresh = $pdo->prepare('SELECT * FROM orders WHERE id = :id LIMIT 1');
+            $refresh->execute([':id' => $order['id']]);
+            $currentOrder = $refresh->fetch();
+
+            if ($currentOrder && elc_should_apply_payment_update($currentOrder, $paymentId, $finalStatus, (int) $paymentUpdatedAt)) {
+                $orderUpdate = $pdo->prepare(
+                    'UPDATE orders
+                     SET payment_id = :payment_id,
+                         status = :status,
+                         payment_updated_at = :payment_updated_at,
+                         updated_at = :updated_at
+                     WHERE id = :id'
+                );
+                $orderUpdate->execute([
+                    ':payment_id' => $paymentId,
+                    ':status' => $finalStatus,
+                    ':payment_updated_at' => (int) $paymentUpdatedAt,
+                    ':updated_at' => gmdate('c'),
+                    ':id' => $currentOrder['id'],
+                ]);
+            }
+        }
+
         $pdo->commit();
     } catch (Throwable $error) {
         if ($pdo->inTransaction()) {

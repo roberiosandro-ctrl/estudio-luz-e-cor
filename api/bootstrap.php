@@ -23,8 +23,9 @@ function elc_private_config_path(): string
         return $configured;
     }
 
-    // O projeto publicado fica cinco níveis abaixo da home da conta Hostinger.
-    return dirname(__DIR__, 5) . '/estudio-luz-e-cor-v2-private/mercadopago-config.php';
+    // Caminho absoluto conhecido da home da conta Hostinger.
+    // Mantido fora de public_html; pode ser sobrescrito por variável de ambiente.
+    return '/home/u643738877/estudio-luz-e-cor-v2-private/mercadopago-config.php';
 }
 
 function elc_load_config(): array

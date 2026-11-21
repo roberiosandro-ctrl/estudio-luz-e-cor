@@ -89,6 +89,19 @@ function elc_database(array $config): PDO
             updated_at TEXT NOT NULL
         )'
     );
+    // Migração compatível com bancos já criados antes da proteção de ordem dos eventos.
+    $orderColumns = $pdo->query('PRAGMA table_info(orders)')->fetchAll(PDO::FETCH_ASSOC);
+    $hasPaymentUpdatedAt = false;
+    foreach ($orderColumns as $column) {
+        if (($column['name'] ?? '') === 'payment_updated_at') {
+            $hasPaymentUpdatedAt = true;
+            break;
+        }
+    }
+    if (!$hasPaymentUpdatedAt) {
+        $pdo->exec('ALTER TABLE orders ADD COLUMN payment_updated_at INTEGER');
+    }
+
     $pdo->exec(
         'CREATE TABLE IF NOT EXISTS webhook_events (
             event_key TEXT PRIMARY KEY,
@@ -130,6 +143,94 @@ function elc_allowed_model_codes(): array
         }
     }
     return $codes;
+}
+
+function elc_amount_to_cents($amount): ?int
+{
+    if (!is_string($amount) && !is_int($amount) && !is_float($amount)) {
+        return null;
+    }
+    $value = trim((string) $amount);
+    if (!preg_match('/^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,2})?$/', $value)) {
+        return null;
+    }
+    $parts = explode('.', $value, 2);
+    $whole = (int) $parts[0];
+    $fraction = isset($parts[1]) ? str_pad($parts[1], 2, '0') : '00';
+    return ($whole * 100) + (int) $fraction;
+}
+
+function elc_verify_preference_binding(array $config, array $order, array $payment): bool
+{
+    $preferenceId = trim((string) ($order['preference_id'] ?? ''));
+    $externalReference = (string) ($order['external_reference'] ?? '');
+    if ($preferenceId === '' || $externalReference === '') {
+        return false;
+    }
+
+    // O objeto Payment nem sempre expõe preference_id. A consulta da preferência
+    // confirma que o ID salvo no pedido pertence à mesma referência externa.
+    if (isset($payment['preference_id']) && (string) $payment['preference_id'] !== $preferenceId) {
+        return false;
+    }
+    $preference = elc_mp_request($config, 'GET', '/checkout/preferences/' . rawurlencode($preferenceId));
+    if ((string) ($preference['id'] ?? '') !== $preferenceId
+        || (string) ($preference['external_reference'] ?? '') !== $externalReference) {
+        return false;
+    }
+
+    // Quando a API Payment informa o pedido comercial, validamos também o vínculo
+    // entre pagamento, pedido comercial, preferência e referência externa.
+    $merchantOrderId = $payment['order']['id'] ?? null;
+    if ($merchantOrderId !== null && preg_match('/^[0-9]+$/', (string) $merchantOrderId)) {
+        $merchantOrder = elc_mp_request($config, 'GET', '/merchant_orders/' . rawurlencode((string) $merchantOrderId));
+        if ((string) ($merchantOrder['external_reference'] ?? '') !== $externalReference
+            || (string) ($merchantOrder['preference_id'] ?? '') !== $preferenceId) {
+            return false;
+        }
+        $paymentFound = false;
+        foreach (($merchantOrder['payments'] ?? []) as $merchantPayment) {
+            if ((string) ($merchantPayment['id'] ?? '') === (string) ($payment['id'] ?? '')) {
+                $paymentFound = true;
+                break;
+            }
+        }
+        if (!$paymentFound) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function elc_should_apply_payment_update(array $order, string $paymentId, string $newStatus, int $newUpdatedAt): bool
+{
+    $currentStatus = (string) ($order['status'] ?? '');
+    $currentPaymentId = (string) ($order['payment_id'] ?? '');
+    $samePayment = $currentPaymentId === '' || $currentPaymentId === $paymentId;
+
+    if ($currentStatus === 'charged_back') {
+        return false;
+    }
+    if ($currentStatus === 'refunded') {
+        return $newStatus === 'charged_back' && $samePayment;
+    }
+    if ($currentStatus === 'approved' && !in_array($newStatus, ['refunded', 'charged_back'], true)) {
+        return false;
+    }
+    if (!$samePayment && in_array($currentStatus, ['approved', 'refunded', 'charged_back'], true)) {
+        return false;
+    }
+
+    $currentUpdatedAt = isset($order['payment_updated_at']) ? (int) $order['payment_updated_at'] : 0;
+    if ($newUpdatedAt < $currentUpdatedAt) {
+        return false;
+    }
+    if ($newUpdatedAt === $currentUpdatedAt && $currentPaymentId === $paymentId && $currentStatus !== $newStatus) {
+        // Empate de timestamp não permite substituir um estado já gravado.
+        return false;
+    }
+    return true;
 }
 
 function elc_rate_limit(PDO $pdo, int $limit = 12, int $windowSeconds = 600): void
@@ -195,6 +296,17 @@ function elc_mp_request(array $config, string $method, string $path, ?array $pay
     }
 
     $baseUrl = rtrim((string) ($config['api_base_url'] ?? 'https://api.mercadopago.com'), '/');
+    $baseParts = parse_url($baseUrl);
+    if (!is_array($baseParts)
+        || ($baseParts['scheme'] ?? '') !== 'https'
+        || strtolower((string) ($baseParts['host'] ?? '')) !== 'api.mercadopago.com'
+        || isset($baseParts['user'])
+        || isset($baseParts['pass'])
+        || isset($baseParts['port'])
+        || $path === ''
+        || $path[0] !== '/') {
+        throw new RuntimeException('Destino da API Mercado Pago inválido.');
+    }
     $url = $baseUrl . $path;
     $headers = [
         'Authorization: Bearer ' . $token,

@@ -1,71 +1,83 @@
 # Estúdio Luz e Cor V2 — preparação Mercado Pago
 
-Esta pasta contém apenas a camada inicial de backend. Ela não altera o catálogo nem ativa pagamentos. O frontend atual não foi conectado nesta etapa.
+Esta pasta contém somente a camada inicial de backend. Ela não altera o catálogo nem ativa pagamentos. O frontend atual ainda não foi conectado.
 
 ## Arquivos
 
-- api/bootstrap.php: funções comuns, validação da configuração privada, SQLite, lista confiável de pacotes/modelos e cliente HTTP do Mercado Pago.
-- api/create-preference.php: endpoint POST para criar uma preferência Checkout Pro depois de validar pacote e referências no servidor.
-- api/mercadopago-webhook.php: endpoint POST para validar a assinatura do Webhook, consultar o pagamento pela API e atualizar o pedido de forma idempotente.
-- api/health.php: verificação de requisitos protegida por token privado; não responde a consultas públicas.
+- `api/bootstrap.php`: configuração privada, SQLite, validações e comunicação com a API Mercado Pago.
+- `api/create-preference.php`: endpoint POST para criar uma preferência Checkout Pro, somente quando o servidor for explicitamente habilitado.
+- `api/mercadopago-webhook.php`: valida a assinatura do Webhook, consulta o pagamento e confere o vínculo com a preferência salva.
+- `api/health.php`: diagnóstico protegido por token privado; não responde a consultas públicas.
 
-## Endpoints previstos
+## Endpoints
 
-- GET /api/health.php (somente com o cabeçalho privado X-Health-Token)
-- POST /api/create-preference.php com JSON {"package_id":"fotos-05","model_codes":["ELEG-01","ROM-02"]}
-- POST /api/mercadopago-webhook.php (chamado pelo Mercado Pago)
+- `GET /api/health.php`: exige o cabeçalho HTTP `X-Health-Token`.
+- `POST /api/create-preference.php`: recebe JSON como `{"package_id":"fotos-05","model_codes":["ELEG-01","ROM-02"]}`.
+- `POST /api/mercadopago-webhook.php`: recebe notificações do Mercado Pago.
 
-O endpoint de criação responde com checkout_url somente depois que o Mercado Pago devolver uma preferência válida. O Access Token nunca é enviado ao navegador.
+O Access Token nunca é enviado ao navegador. A URL de retorno do checkout não aprova pagamentos; a confirmação depende do Webhook validado e da consulta à API.
 
 ## Pacotes validados no servidor
 
 | ID interno | Pacote | Valor |
-|---|---:|---:|
+|---|---|---:|
 | fotos-02 | 2 fotos | R$ 29,90 |
 | fotos-05 | 5 fotos | R$ 54,90 |
 | fotos-10 | 10 fotos | R$ 89,90 |
 | fotos-15 | 15 fotos | R$ 109,90 |
 | fotos-20 | 20 fotos | R$ 129,90 |
 
-Os 60 códigos de referência são aceitos em uma lista fechada: ELEG, PROF, ROM, LUX, ANIV, GEST, CAS, FASH, FAM e FANT, cada coleção de 01 a 06.
+Os códigos permitidos correspondem às 10 coleções do catálogo versionado, com seis referências cada: ELEG, PROF, ROM, LUX, ANIV, GEST, CAS, FASH, FAM e FANT (01 a 06).
 
 ## Configuração privada — não versionar
 
-Criar manualmente, somente no servidor Hostinger, uma pasta privada fora de public_html:
+Criar no servidor Hostinger, fora de `public_html`:
 
-/home/CONTA_HOSTINGER/estudio-luz-e-cor-v2-private/
+`/home/u643738877/estudio-luz-e-cor-v2-private/mercadopago-config.php`
 
-Dentro dela, criar mercadopago-config.php com o seguinte formato (preencher somente no servidor, quando houver autorização):
+Estrutura inicial, com pagamentos desativados e credenciais vazias:
 
 ~~~php
 <?php
+declare(strict_types=1);
+
 return [
-    'environment' => 'test', // usar 'production' somente após homologação e autorização
+    'environment' => 'test',
+    'payments_enabled' => false,
     'access_token' => '',
     'webhook_secret' => '',
+    'health_token' => '', // gerar valor longo e aleatório, somente no servidor
     'api_base_url' => 'https://api.mercadopago.com',
     'public_base_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2',
     'return_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2/index-v2.html',
-    'webhook_url' => '', // vazio para usar public_base_url + /api/mercadopago-webhook.php
-    'health_token' => '', // gerar uma senha longa e aleatória, somente no servidor
+    'webhook_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2/api/mercadopago-webhook.php',
     'database_path' => __DIR__ . '/orders.sqlite',
 ];
 ~~~
 
-Por padrão, o bootstrap procura esse arquivo cinco níveis acima da pasta api, na home da conta Hostinger. Se o caminho real for diferente, definir ELC_MP_CONFIG_PATH no ambiente do PHP. A pasta privada deve ficar fora do document root e ter permissões restritas (diretório 0700 e arquivo 0600, ajustando conforme o usuário PHP da hospedagem).
+O bootstrap usa esse caminho absoluto por padrão. A pasta e o arquivo de configuração devem ter permissões restritas, ajustadas ao usuário PHP da hospedagem. O banco SQLite também deve permanecer fora de `public_html`.
 
-O arquivo de configuração, o banco SQLite e qualquer segredo não podem ser enviados ao GitHub nem colocados dentro de public_html.
+Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token de diagnóstico ao GitHub, ao navegador ou ao chat.
 
-## Segurança e pendências antes de produção
+## Proteções implementadas
 
-1. O ambiente inicial é test; credenciais ainda não foram configuradas.
-2. O Webhook valida x-signature usando o data.id da query string, consulta o pagamento e confirma a preferência vinculada antes de atualizar o pedido.\n3. Eventos repetidos não reaplicam atualizações; estados antigos não rebaixam um pagamento aprovado, reembolsado ou contestado.
-3. O status aprovado só deve ser considerado válido quando referência, valor e moeda conferirem com o pedido salvo.
-4. A confirmação do navegador/URL de retorno não aprova pagamento.
-5. O frontend ainda não chama create-preference.php; a ligação do botão é uma etapa separada e requer backup e autorização.
-6. O fluxo de upload de fotos e geração de imagens por IA não está incluído nesta etapa.
-7. Antes de produção, validar o caminho privado real, a entrega do Webhook, o comportamento de reenvios, os estados de pagamento e os requisitos de segurança/rate limiting da hospedagem.
+1. Pagamentos ficam bloqueados enquanto `payments_enabled` não for exatamente `true`.
+2. A API de destino é limitada a HTTPS em `api.mercadopago.com`.
+3. O Webhook usa o `data.id` da query string na validação HMAC SHA-256; em PHP, esse parâmetro pode aparecer normalizado como `data_id`.
+4. O servidor consulta o pagamento e a preferência pelo ID salvo, conferindo a referência externa; quando a API informa o pedido comercial, confere também preferência e pagamento associados.
+5. Valor é comparado em centavos inteiros e moeda deve ser BRL.
+6. Eventos repetidos não reaplicam atualizações. Eventos antigos não rebaixam um pagamento aprovado, reembolsado ou contestado.
+7. O SQLite inclui migração da coluna de data de atualização do pagamento.
+8. O endpoint de diagnóstico exige `X-Health-Token`; sem token privado configurado responde 404.
 
-O endpoint health.php exige o cabeçalho HTTP X-Health-Token. Sem um health_token longo e aleatório configurado no arquivo privado, responde 404. Não exponha esse token no navegador nem o envie ao GitHub.\n\n## Estado desta entrega
+## Limites desta etapa
 
-Preparação de código apenas. Nenhum token, segredo, pedido real, preferência ou pagamento foi criado. Não houve deploy na Hostinger.
+- Nenhum pagamento está habilitado.
+- O frontend não chama `create-preference.php`.
+- Não há geração de imagens por IA nem entrega automática.
+- Ainda é necessário testar PHP, permissões, SQLite, Webhook de teste e fluxo completo no subdomínio antes de qualquer ativação.
+- Um pagamento adicional feito após uma aprovação exige reconciliação manual; esta etapa não automatiza reembolsos nem tratamento de disputas.
+
+## Estado
+
+Preparação de código apenas. Nenhum token, segredo, pedido real, preferência ou pagamento foi criado. Não houve deploy na Hostinger nem alteração no site.

@@ -60,7 +60,7 @@ A resposta deve ser JSON. Nesta etapa, é esperado que \`private_config_installe
 Testar também que:
 
 - GET em \`create-preference.php\` responde 405.
-- POST sem configuração/credenciais válidas não cria cobrança e não expõe detalhes internos.
+- GET em \\`health.php\\` sem o cabeçalho \\`X-Health-Token\\` responde 404.\n- POST sem configuração/credenciais válidas não cria cobrança e não expõe detalhes internos.
 - GET em \`mercadopago-webhook.php\` responde 405.
 - Nenhuma chave ou segredo aparece na resposta.
 

@@ -322,3 +322,22 @@ body::before{background:none}
   .pricing-note{font-size:10px;line-height:1.3}
   .pricing-highlight{font-size:9px}
 }
+
+
+/* Centraliza os nomes sobre todas as fotos da seção de inspirações */
+.inspiration-caption{
+  left:24px;
+  right:24px;
+  text-align:center;
+}
+.inspiration-caption small,
+.inspiration-caption strong{
+  text-align:center;
+}
+@media(max-width:680px){
+  .inspiration-caption{
+    left:16px;
+    right:16px;
+    text-align:center;
+  }
+}

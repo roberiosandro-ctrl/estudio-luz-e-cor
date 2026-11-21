@@ -7,11 +7,11 @@ Esta pasta contém apenas a camada inicial de backend. Ela não altera o catálo
 - api/bootstrap.php: funções comuns, validação da configuração privada, SQLite, lista confiável de pacotes/modelos e cliente HTTP do Mercado Pago.
 - api/create-preference.php: endpoint POST para criar uma preferência Checkout Pro depois de validar pacote e referências no servidor.
 - api/mercadopago-webhook.php: endpoint POST para validar a assinatura do Webhook, consultar o pagamento pela API e atualizar o pedido de forma idempotente.
-- api/health.php: verificação não sensível dos requisitos de execução.
+- api/health.php: verificação de requisitos protegida por token privado; não responde a consultas públicas.
 
 ## Endpoints previstos
 
-- GET /api/health.php
+- GET /api/health.php (somente com o cabeçalho privado X-Health-Token)
 - POST /api/create-preference.php com JSON {"package_id":"fotos-05","model_codes":["ELEG-01","ROM-02"]}
 - POST /api/mercadopago-webhook.php (chamado pelo Mercado Pago)
 
@@ -47,6 +47,7 @@ return [
     'public_base_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2',
     'return_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2/index-v2.html',
     'webhook_url' => '', // vazio para usar public_base_url + /api/mercadopago-webhook.php
+    'health_token' => '', // gerar uma senha longa e aleatória, somente no servidor
     'database_path' => __DIR__ . '/orders.sqlite',
 ];
 ~~~
@@ -58,13 +59,13 @@ O arquivo de configuração, o banco SQLite e qualquer segredo não podem ser en
 ## Segurança e pendências antes de produção
 
 1. O ambiente inicial é test; credenciais ainda não foram configuradas.
-2. O Webhook valida x-signature com HMAC SHA-256 e consulta o pagamento na API antes de atualizar o pedido.
+2. O Webhook valida x-signature usando o data.id da query string, consulta o pagamento e confirma a preferência vinculada antes de atualizar o pedido.\n3. Eventos repetidos não reaplicam atualizações; estados antigos não rebaixam um pagamento aprovado, reembolsado ou contestado.
 3. O status aprovado só deve ser considerado válido quando referência, valor e moeda conferirem com o pedido salvo.
 4. A confirmação do navegador/URL de retorno não aprova pagamento.
 5. O frontend ainda não chama create-preference.php; a ligação do botão é uma etapa separada e requer backup e autorização.
 6. O fluxo de upload de fotos e geração de imagens por IA não está incluído nesta etapa.
 7. Antes de produção, validar o caminho privado real, a entrega do Webhook, o comportamento de reenvios, os estados de pagamento e os requisitos de segurança/rate limiting da hospedagem.
 
-## Estado desta entrega
+O endpoint health.php exige o cabeçalho HTTP X-Health-Token. Sem um health_token longo e aleatório configurado no arquivo privado, responde 404. Não exponha esse token no navegador nem o envie ao GitHub.\n\n## Estado desta entrega
 
 Preparação de código apenas. Nenhum token, segredo, pedido real, preferência ou pagamento foi criado. Não houve deploy na Hostinger.

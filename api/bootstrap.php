@@ -182,7 +182,7 @@ function elc_verify_preference_binding(array $config, array $order, array $payme
     // Quando a API Payment informa o pedido comercial, validamos também o vínculo
     // entre pagamento, pedido comercial, preferência e referência externa.
     $merchantOrderId = $payment['order']['id'] ?? null;
-    if ($merchantOrderId !== null && preg_match('/^[0-9]+$/', (string) $merchantOrderId)) {
+    if (is_scalar($merchantOrderId) && preg_match('/^[0-9]+$/', (string) $merchantOrderId)) {
         $merchantOrder = elc_mp_request($config, 'GET', '/merchant_orders/' . rawurlencode((string) $merchantOrderId));
         if ((string) ($merchantOrder['external_reference'] ?? '') !== $externalReference
             || (string) ($merchantOrder['preference_id'] ?? '') !== $preferenceId) {

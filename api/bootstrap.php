@@ -168,19 +168,12 @@ function elc_verify_preference_binding(array $config, array $order, array $payme
         return false;
     }
 
-    // O objeto Payment nem sempre expõe preference_id. A consulta da preferência
-    // confirma que o ID salvo no pedido pertence à mesma referência externa.
     if (isset($payment['preference_id']) && (string) $payment['preference_id'] !== $preferenceId) {
         return false;
     }
-    $preference = elc_mp_request($config, 'GET', '/checkout/preferences/' . rawurlencode($preferenceId));
-    if ((string) ($preference['id'] ?? '') !== $preferenceId
-        || (string) ($preference['external_reference'] ?? '') !== $externalReference) {
-        return false;
-    }
 
-    // Quando a API Payment informa o pedido comercial, validamos também o vínculo
-    // entre pagamento, pedido comercial, preferência e referência externa.
+    // Preferir a validação do pedido comercial quando a API Payment informar seu ID.
+    // Ela vincula, em uma única consulta, pagamento, preferência e referência externa.
     $merchantOrderId = $payment['order']['id'] ?? null;
     if (is_scalar($merchantOrderId) && preg_match('/^[0-9]+$/', (string) $merchantOrderId)) {
         $merchantOrder = elc_mp_request($config, 'GET', '/merchant_orders/' . rawurlencode((string) $merchantOrderId));
@@ -188,19 +181,23 @@ function elc_verify_preference_binding(array $config, array $order, array $payme
             || (string) ($merchantOrder['preference_id'] ?? '') !== $preferenceId) {
             return false;
         }
-        $paymentFound = false;
-        foreach (($merchantOrder['payments'] ?? []) as $merchantPayment) {
-            if ((string) ($merchantPayment['id'] ?? '') === (string) ($payment['id'] ?? '')) {
-                $paymentFound = true;
-                break;
-            }
-        }
-        if (!$paymentFound) {
+        $merchantPayments = $merchantOrder['payments'] ?? [];
+        if (!is_array($merchantPayments)) {
             return false;
         }
+        foreach ($merchantPayments as $merchantPayment) {
+            if ((string) ($merchantPayment['id'] ?? '') === (string) ($payment['id'] ?? '')) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    return true;
+    // Fallback para respostas Payment sem pedido comercial: confirmar a preferência
+    // armazenada no pedido e sua referência externa no próprio Mercado Pago.
+    $preference = elc_mp_request($config, 'GET', '/checkout/preferences/' . rawurlencode($preferenceId));
+    return (string) ($preference['id'] ?? '') === $preferenceId
+        && (string) ($preference['external_reference'] ?? '') === $externalReference;
 }
 
 function elc_should_apply_payment_update(array $order, string $paymentId, string $newStatus, int $newUpdatedAt): bool
@@ -322,8 +319,8 @@ function elc_mp_request(array $config, string $method, string $path, ?array $pay
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_CUSTOMREQUEST => strtoupper($method),
         CURLOPT_HTTPHEADER => $headers,
-        CURLOPT_CONNECTTIMEOUT => 10,
-        CURLOPT_TIMEOUT => 25,
+        CURLOPT_CONNECTTIMEOUT => 3,
+        CURLOPT_TIMEOUT => 9,
         CURLOPT_SSL_VERIFYPEER => true,
         CURLOPT_SSL_VERIFYHOST => 2,
     ]);

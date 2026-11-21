@@ -36,7 +36,7 @@ try {
 
     // A assinatura do Mercado Pago usa o data.id recebido na query string.
     // Não aceitar o ID somente do corpo, pois isso alteraria o manifesto assinado.
-    $paymentId = trim((string) ($_GET['data.id'] ?? ''));
+    $paymentId = trim((string) ($_GET['data_id'] ?? $_GET['data.id'] ?? ''));
     $requestId = trim((string) ($_SERVER['HTTP_X_REQUEST_ID'] ?? ''));
     $signatureHeader = trim((string) ($_SERVER['HTTP_X_SIGNATURE'] ?? ''));
     if ($paymentId === '' || !preg_match('/^[0-9]+$/', $paymentId) || $requestId === '' || $signatureHeader === '') {

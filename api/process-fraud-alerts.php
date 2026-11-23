@@ -52,7 +52,10 @@ function elc_mark_fraud_order(PDO $pdo, array $order, string $paymentId, string 
 
     $update = $pdo->prepare(
         'UPDATE orders
-         SET payment_id = :payment_id,
+         SET payment_id = CASE
+                 WHEN payment_id IS NULL OR payment_id = '' THEN :payment_id
+                 ELSE payment_id
+             END,
              status = :status,
              payment_updated_at = :payment_updated_at,
              updated_at = :updated_at

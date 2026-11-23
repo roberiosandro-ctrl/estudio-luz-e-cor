@@ -104,7 +104,7 @@ try {
             );
 
             if ($answer['checkout_intent'] && !$customerAuthorizedCheckout) {
-                $reply .= "\\n\\nPara sua segurança, só vou gerar o link quando você confirmar que deseja finalizar a compra. Se quiser, responda: Pode gerar meu link de pagamento.";
+                $reply .= "\n\nPara sua segurança, só vou gerar o link quando você confirmar que deseja finalizar a compra. Se quiser, responda: Pode gerar meu link de pagamento.";
             }
 
             if ($answer['checkout_intent'] && $customerAuthorizedCheckout) {

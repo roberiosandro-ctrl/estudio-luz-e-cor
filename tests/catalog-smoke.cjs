@@ -53,9 +53,18 @@ for (const [quantity, price] of pricePairs) {
   check(html.includes(quantity) && html.includes(price), "preço/quantidade ausente na página: " + quantity);
 }
 
-const packageIds = ["fotos-02", "fotos-05", "fotos-10", "fotos-15", "fotos-20"];
-for (const packageId of packageIds) {
-  check(html.includes('data-package-id="' + packageId + '"'), "botão de pacote ausente: " + packageId);
+const packageDetails = [
+  ["fotos-02", "2", "29,90"],
+  ["fotos-05", "5", "54,90"],
+  ["fotos-10", "10", "89,90"],
+  ["fotos-15", "15", "109,90"],
+  ["fotos-20", "20", "129,90"]
+];
+for (const [packageId, quantity, price] of packageDetails) {
+  check(
+    html.includes('data-package-id="' + packageId + '" data-quantity="' + quantity + '" data-price="' + price + '"'),
+    "botão de pacote ou valor divergente: " + packageId
+  );
 }
 check((html.match(/class="package-select-button"/g) || []).length === 5, "deve haver cinco botões de seleção de pacote");
 check(html.includes('id="selectedPackageSummary"'), "página deve mostrar o resumo do pacote");
@@ -64,6 +73,7 @@ check(script.includes('fetch("api/create-preference.php"'), "frontend deve chama
 check(script.includes("package_id: selectedPackage.id"), "frontend deve enviar o pacote escolhido");
 check(script.includes("model_codes: Array.from(selected.keys())"), "frontend deve enviar as referências selecionadas");
 check(script.includes("A confirmação final será feita pelo sistema"), "retorno do checkout não deve ser tratado como confirmação de pagamento");
+check(html.includes("comprovantes enviados pelo comprador não substituem essa confirmação"), "página deve explicar que comprovantes não aprovam pedidos");
 check(script.includes('cleanUrl.searchParams.delete("external_reference")'), "frontend deve limpar a referência da URL após o retorno");
 check(styles.includes(".checkout-button"), "estilos do botão de checkout devem existir");
 

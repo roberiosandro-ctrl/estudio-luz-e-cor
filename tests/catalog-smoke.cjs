@@ -8,6 +8,8 @@ const root = path.resolve(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index-v2.html"), "utf8");
 const catalogSource = fs.readFileSync(path.join(root, "catalog-data-v2.js"), "utf8");
 const bootstrap = fs.readFileSync(path.join(root, "api/bootstrap.php"), "utf8");
+const script = fs.readFileSync(path.join(root, "script-v2.js"), "utf8");
+const styles = fs.readFileSync(path.join(root, "ajustes-v2.css"), "utf8");
 const context = { window: {} };
 
 vm.runInNewContext(catalogSource, context, { filename: "catalog-data-v2.js" });
@@ -50,6 +52,18 @@ const pricePairs = [
 for (const [quantity, price] of pricePairs) {
   check(html.includes(quantity) && html.includes(price), "preço/quantidade ausente na página: " + quantity);
 }
+
+const packageIds = ["fotos-02", "fotos-05", "fotos-10", "fotos-15", "fotos-20"];
+for (const packageId of packageIds) {
+  check(html.includes('data-package-id="' + packageId + '"'), "botão de pacote ausente: " + packageId);
+}
+check((html.match(/class="package-select-button"/g) || []).length === 5, "deve haver cinco botões de seleção de pacote");
+check(html.includes('id="selectedPackageSummary"'), "página deve mostrar o resumo do pacote");
+check(html.includes('id="checkoutButton"'), "página deve ter o botão de checkout");
+check(script.includes('fetch("api/create-preference.php"'), "frontend deve chamar a API de criação de preferência");
+check(script.includes("package_id: selectedPackage.id"), "frontend deve enviar o pacote escolhido");
+check(script.includes("model_codes: Array.from(selected.keys())"), "frontend deve enviar as referências selecionadas");
+check(styles.includes(".checkout-button"), "estilos do botão de checkout devem existir");
 
 check(html.includes('src="catalog-data-v2.js"'), "página deve carregar os dados do catálogo");
 check(html.includes('src="script-v2.js"'), "página deve carregar o script V2");

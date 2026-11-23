@@ -7,7 +7,7 @@ Esta pasta contém somente a camada inicial de backend. Ela não altera o catál
 - `api/bootstrap.php`: configuração privada, SQLite, validações e comunicação com a API Mercado Pago.
 - `api/create-preference.php`: endpoint POST para criar uma preferência Checkout Pro, somente quando o servidor for explicitamente habilitado.
 - `api/mercadopago-webhook.php`: valida a assinatura do Webhook, consulta o pagamento e confere o vínculo com a preferência salva.
-- `api/health.php`: diagnóstico protegido por token privado; não responde a consultas públicas.
+- `api/health.php`: diagnóstico protegido por token privado; somente leitura, sem criar banco, tabelas, migrações ou arquivos.
 
 ## Endpoints
 
@@ -33,7 +33,7 @@ Os códigos permitidos correspondem às 10 coleções do catálogo versionado, c
 
 Criar no servidor Hostinger, fora de `public_html`:
 
-`/home/u643738877/estudio-luz-e-cor-v2-private/mercadopago-config.php`
+`/home/u643738877/domains/rsmtrafegopago.online/private/mercadopago-config.php`
 
 Estrutura inicial, com pagamentos desativados e credenciais vazias:
 
@@ -55,7 +55,7 @@ return [
 ];
 ~~~
 
-O bootstrap usa esse caminho absoluto por padrão. A pasta e o arquivo de configuração devem ter permissões restritas, ajustadas ao usuário PHP da hospedagem. O banco SQLite também deve permanecer fora de `public_html`.
+O bootstrap usa esse caminho absoluto por padrão. A pasta e o arquivo de configuração devem ter permissões restritas, ajustadas ao usuário PHP da hospedagem. O banco SQLite também deve permanecer fora de `public_html`. O arquivo `orders.sqlite` será criado pelo backend somente quando o primeiro acesso legítimo ao banco ocorrer; o endpoint de diagnóstico não o cria.
 
 Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token de diagnóstico ao GitHub, ao navegador ou ao chat.
 
@@ -68,7 +68,7 @@ Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token
 5. Valor é comparado em centavos inteiros e moeda deve ser BRL.
 6. Eventos repetidos não reaplicam atualizações. Eventos antigos não rebaixam um pagamento aprovado, reembolsado ou contestado.
 7. O SQLite inclui migração da coluna de data de atualização do pagamento.
-8. O endpoint de diagnóstico exige `X-Health-Token`; sem token privado configurado responde 404.
+8. O endpoint de diagnóstico exige `X-Health-Token`; sem token privado configurado responde 404. A verificação é somente leitura e apenas confere a existência e as permissões do arquivo SQLite, sem abrir o banco para escrita.
 
 ## Limites desta etapa
 

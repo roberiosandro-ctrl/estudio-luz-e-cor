@@ -123,7 +123,9 @@ function elc_assistant_extract_inbound_messages(array $payload): array
                 }
 
                 if ($text === '') {
-                    $text = '[O cliente enviou uma mensagem do tipo ' . preg_replace('/[^a-z_]/', '', $type) . '. Peça que descreva em texto o que precisa.]';
+                    $mediaLabels = ['image' => 'imagem', 'audio' => 'áudio', 'video' => 'vídeo', 'document' => 'documento', 'sticker' => 'figurinha', 'location' => 'localização'];
+                    $typeLabel = $mediaLabels[$type] ?? 'mensagem não textual';
+                    $text = '[O cliente enviou uma ' . $typeLabel . '. Peça que descreva em texto o que precisa.]';
                 }
                 if (strlen($text) > 8000) {
                     $text = substr($text, 0, 8000);

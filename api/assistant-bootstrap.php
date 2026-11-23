@@ -178,7 +178,7 @@ function elc_assistant_catalog(): array
 function elc_assistant_customer_requested_checkout(string $latestMessage, array $history): bool
 {
     $message = trim($latestMessage);
-    if (preg_match('/\\b(quero\\s+(comprar|pagar|finalizar)|vou\\s+comprar|pode\\s+(gerar|mandar|enviar)\\s+(o\\s+)?link|manda\\s+(o\\s+)?link|gerar\\s+(o\\s+)?link|finalizar\\s+(a\\s+)?compra)\\b/iu', $message)) {
+    if (preg_match('/\\b(quero\\s+(comprar|pagar|finalizar)|vou\\s+comprar|pode\\s+(gerar|mandar|enviar)\\s+((o|meu|seu)\\s+)?link|manda\\s+(o\\s+)?link|gerar\\s+(o\\s+)?link|finalizar\\s+(a\\s+)?compra)\\b/iu', $message)) {
         return true;
     }
 

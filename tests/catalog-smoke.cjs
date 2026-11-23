@@ -63,6 +63,8 @@ check(html.includes('id="checkoutButton"'), "página deve ter o botão de checko
 check(script.includes('fetch("api/create-preference.php"'), "frontend deve chamar a API de criação de preferência");
 check(script.includes("package_id: selectedPackage.id"), "frontend deve enviar o pacote escolhido");
 check(script.includes("model_codes: Array.from(selected.keys())"), "frontend deve enviar as referências selecionadas");
+check(script.includes("A confirmação final será feita pelo sistema"), "retorno do checkout não deve ser tratado como confirmação de pagamento");
+check(script.includes('cleanUrl.searchParams.delete("external_reference")'), "frontend deve limpar a referência da URL após o retorno");
 check(styles.includes(".checkout-button"), "estilos do botão de checkout devem existir");
 
 check(html.includes('src="catalog-data-v2.js"'), "página deve carregar os dados do catálogo");

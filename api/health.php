@@ -40,16 +40,14 @@ try {
     if ($checks['sqlite_database_configured']) {
         $databaseDirectory = realpath(dirname($databasePath));
         $databaseRealPath = is_file($databasePath) ? realpath($databasePath) : false;
-        $documentRoot = isset($_SERVER['DOCUMENT_ROOT'])
-            ? realpath((string) $_SERVER['DOCUMENT_ROOT'])
-            : false;
+        $documentRoot = elc_document_root();
 
         $checks['sqlite_outside_document_root'] = !is_link($databasePath)
             && $databaseDirectory !== false
-            && ($documentRoot === false
+            && ($documentRoot === null
                 || !elc_path_is_within($databaseDirectory, $documentRoot))
             && ($databaseRealPath === false
-                || $documentRoot === false
+                || $documentRoot === null
                 || !elc_path_is_within($databaseRealPath, $documentRoot));
 
         $checks['sqlite_database_file_exists'] = is_file($databasePath);

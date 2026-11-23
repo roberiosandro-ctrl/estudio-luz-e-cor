@@ -87,6 +87,12 @@ check(elc_fraud_action_for_payment_status('approved') === 'refund', 'alerta reem
 check(elc_fraud_action_for_payment_status('refunded') === 'already_resolved', 'pagamento reembolsado já está resolvido');
 check(elc_fraud_action_for_payment_status('charged_back') === 'already_resolved', 'pagamento contestado já está resolvido');
 check(elc_fraud_action_for_payment_status('in_mediation') === 'manual_review', 'status não previsto exige análise manual');
+$validRefund = ['id' => '2001', 'payment_id' => '1001', 'status' => 'approved', 'amount' => 54.90];
+$partialRefund = ['id' => '2002', 'payment_id' => '1001', 'status' => 'approved', 'amount' => 20.00];
+$wrongPaymentRefund = ['id' => '2003', 'payment_id' => '9999', 'status' => 'approved', 'amount' => 54.90];
+check(elc_refund_matches_payment($validRefund, '1001', 5490), 'aceita reembolso integral do pagamento correto');
+check(!elc_refund_matches_payment($partialRefund, '1001', 5490), 'rejeita reembolso parcial como integral');
+check(!elc_refund_matches_payment($wrongPaymentRefund, '1001', 5490), 'rejeita reembolso de outro pagamento');
 
 $whatsappMessage = elc_whatsapp_template_message(
     '5548998336779',

@@ -224,6 +224,42 @@ try {
                     ':updated_at' => gmdate('c'),
                     ':id' => $currentOrder['id'],
                 ]);
+
+                // O aviso é enfileirado na mesma transação do status aprovado.
+                // O envio real fica para um worker CLI, nunca dentro do Webhook.
+                if ($finalStatus === 'approved'
+                    && ($config['whatsapp_notifications_enabled'] ?? false) === true) {
+                    $recipient = trim((string) ($config['whatsapp_recipient'] ?? ''));
+                    $templateName = trim((string) ($config['whatsapp_template_name'] ?? ''));
+                    $templateLanguage = trim((string) ($config['whatsapp_template_language'] ?? 'pt_BR'));
+
+                    if (preg_match('/^[1-9][0-9]{9,14}$/', $recipient)
+                        && preg_match('/^[a-z0-9_]{1,512}$/', $templateName)
+                        && preg_match('/^[a-z]{2}_[A-Z]{2}$/', $templateLanguage)) {
+                        $notificationPayload = json_encode([
+                            'order_reference' => $externalReference,
+                            'package_name' => (string) $currentOrder['package_name'],
+                            'amount_cents' => (int) $currentOrder['amount_cents'],
+                        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+
+                        $notificationInsert = $pdo->prepare(
+                            'INSERT OR IGNORE INTO notification_outbox
+                             (id, order_id, channel, event_type, recipient, payload_json, status, attempts, next_attempt_at, created_at, updated_at)
+                             VALUES (:id, :order_id, "whatsapp", "payment_approved", :recipient, :payload_json, "queued", 0, 0, :created_at, :updated_at)'
+                        );
+                        $notificationNow = gmdate('c');
+                        $notificationInsert->execute([
+                            ':id' => bin2hex(random_bytes(16)),
+                            ':order_id' => (string) $currentOrder['id'],
+                            ':recipient' => $recipient,
+                            ':payload_json' => $notificationPayload,
+                            ':created_at' => $notificationNow,
+                            ':updated_at' => $notificationNow,
+                        ]);
+                    } else {
+                        error_log('Estudio Luz e Cor: aviso WhatsApp habilitado, mas a configuração do destinatário/template está incompleta.');
+                    }
+                }
             }
         }
 

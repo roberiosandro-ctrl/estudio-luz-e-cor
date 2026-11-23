@@ -353,7 +353,7 @@ function elc_assistant_send_text(array $config, string $recipient, string $text,
         'recipient_type' => 'individual',
         'to' => $recipient,
         'type' => 'text',
-        'text' => ['preview_url' => false, 'body' => mb_substr($text, 0, 4000, 'UTF-8')],
+        'text' => ['preview_url' => false, 'body' => function_exists('mb_substr') ? mb_substr($text, 0, 4000, 'UTF-8') : substr($text, 0, 4000)],
     ];
     if ($contextMessageId !== null && $contextMessageId !== '') {
         $message['context'] = ['message_id' => $contextMessageId];

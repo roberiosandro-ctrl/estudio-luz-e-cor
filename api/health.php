@@ -3,6 +3,11 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') {
+    header('Allow: GET');
+    elc_json_response(405, ['ok' => false, 'message' => 'Método não permitido.']);
+}
+
 try {
     $config = elc_load_config();
     $healthToken = trim((string) ($config['health_token'] ?? ''));
@@ -34,14 +39,18 @@ try {
 
     if ($checks['sqlite_database_configured']) {
         $databaseDirectory = realpath(dirname($databasePath));
+        $databaseRealPath = is_file($databasePath) ? realpath($databasePath) : false;
         $documentRoot = isset($_SERVER['DOCUMENT_ROOT'])
             ? realpath((string) $_SERVER['DOCUMENT_ROOT'])
             : false;
 
-        $checks['sqlite_outside_document_root'] = $databaseDirectory !== false
+        $checks['sqlite_outside_document_root'] = !is_link($databasePath)
+            && $databaseDirectory !== false
             && ($documentRoot === false
-                || ($databaseDirectory !== $documentRoot
-                    && strpos($databaseDirectory, $documentRoot . DIRECTORY_SEPARATOR) !== 0));
+                || !elc_path_is_within($databaseDirectory, $documentRoot))
+            && ($databaseRealPath === false
+                || $documentRoot === false
+                || !elc_path_is_within($databaseRealPath, $documentRoot));
 
         $checks['sqlite_database_file_exists'] = is_file($databasePath);
         $checks['sqlite_database_readable'] = $checks['sqlite_database_file_exists'] && is_readable($databasePath);

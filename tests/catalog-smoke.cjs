@@ -72,6 +72,7 @@ check(html.includes('id="checkoutButton"'), "página deve ter o botão de checko
 check(script.includes('fetch("api/create-preference.php"'), "frontend deve chamar a API de criação de preferência");
 check(script.includes("package_id: selectedPackage.id"), "frontend deve enviar o pacote escolhido");
 check(script.includes("model_codes: Array.from(selected.keys())"), "frontend deve enviar as referências selecionadas");
+check(script.includes("selected.size >= selectedPackage.quantity"), "frontend deve impedir exceder a quantidade do pacote");
 check(script.includes("A confirmação final será feita pelo sistema"), "retorno do checkout não deve ser tratado como confirmação de pagamento");
 check(html.includes("comprovantes enviados pelo comprador não substituem essa confirmação"), "página deve explicar que comprovantes não aprovam pedidos");
 check(script.includes('cleanUrl.searchParams.delete("external_reference")'), "frontend deve limpar a referência da URL após o retorno");

@@ -22,9 +22,7 @@ function elc_receive_fraud_alert(array $config, array $body): void
         || $paymentId === ''
         || !hash_equals($queryDataId, $paymentId)
         || !preg_match('/^[0-9]+$/', $merchantOrderId)
-        || !is_string($body['date_created'] ?? null)
-        || trim((string) $body['date_created']) === ''
-        || strlen((string) $body['date_created']) > 64) {
+        ) {
         elc_json_response(400, ['ok' => false, 'message' => 'Dados do alerta de fraude inválidos.']);
     }
 
@@ -47,15 +45,11 @@ function elc_receive_fraud_alert(array $config, array $body): void
         elc_json_response(200, ['ok' => true, 'ignored' => true]);
     }
 
-    $createdAt = (string) $body['date_created'];
-    if (strtotime($createdAt) === false) {
-        elc_json_response(400, ['ok' => false, 'message' => 'Data do alerta de fraude inválida.']);
-    }
-
     // O alerta é persistido antes de qualquer chamada externa. O Mercado Pago não
     // reenvia automaticamente este tópico se o servidor não confirmar o recebimento.
+    // O identificador estável usa pagamento + pedido comercial para deduplicar reenvios.
     $pdo = elc_database($config);
-    $eventKey = hash('sha256', 'stop_delivery_op_wh|' . $paymentId . '|' . $merchantOrderId . '|' . $createdAt);
+    $eventKey = hash('sha256', 'stop_delivery_op_wh|' . $paymentId . '|' . $merchantOrderId);
     $insert = $pdo->prepare(
         'INSERT OR IGNORE INTO fraud_alerts
          (event_key, payment_id, merchant_order_id, live_mode, status, attempts, next_attempt_at, created_at, updated_at)

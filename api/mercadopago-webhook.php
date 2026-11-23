@@ -44,7 +44,8 @@ try {
     if (($queryType !== '' && $queryType !== 'payment')
         || $paymentId === ''
         || !preg_match('/^[0-9]+$/', $paymentId)
-        || ($bodyPaymentId !== '' && !hash_equals($paymentId, $bodyPaymentId))
+        || $bodyPaymentId === ''
+        || !hash_equals($paymentId, $bodyPaymentId)
         || $requestId === ''
         || strlen($requestId) > 200
         || preg_match('/[\\x00-\\x1F\\x7F]/', $requestId)
@@ -84,6 +85,18 @@ try {
         || !is_bool($payment['live_mode'])
         || $payment['live_mode'] !== $expectedLiveMode) {
         error_log('Estudio Luz e Cor: ambiente do pagamento não corresponde ao ambiente configurado.');
+        elc_json_response(200, ['ok' => true, 'ignored' => true]);
+    }
+
+    // Em produção, exigir que o pagamento tenha sido recebido pela conta vendedora esperada.
+    $expectedCollectorId = trim((string) ($config['seller_user_id'] ?? ''));
+    if ($expectedLiveMode && $expectedCollectorId === '') {
+        throw new RuntimeException('ID da conta vendedora não configurado para produção.');
+    }
+    if ($expectedCollectorId !== ''
+        && (!preg_match('/^[0-9]+$/', $expectedCollectorId)
+            || (string) ($payment['collector_id'] ?? '') !== $expectedCollectorId)) {
+        error_log('Estudio Luz e Cor: pagamento direcionado a uma conta vendedora diferente da configurada.');
         elc_json_response(200, ['ok' => true, 'ignored' => true]);
     }
 

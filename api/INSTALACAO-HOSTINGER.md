@@ -19,11 +19,11 @@ Não copiar documentação. **Não copiar nem substituir** `index-v2.html`, `scr
 
 ## 2. Diretório privado
 
-Criar fora de `public_html`:
+A pasta privada já confirmada para este domínio fica ao lado de `public_html`:
 
-`/home/u643738877/estudio-luz-e-cor-v2-private/`
+`/home/u643738877/domains/rsmtrafegopago.online/private/`
 
-Manter a configuração e o banco SQLite nessa pasta, nunca na pasta pública. Usar permissões restritas, ajustadas ao usuário PHP da hospedagem.
+Manter a configuração e o banco SQLite nessa pasta, nunca na pasta pública. Usar permissões restritas, ajustadas ao usuário PHP da hospedagem. Não criar uma segunda pasta privada com caminho alternativo.
 
 ## 3. Configuração privada inicial
 

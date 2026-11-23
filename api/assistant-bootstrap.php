@@ -450,14 +450,28 @@ function elc_assistant_create_checkout(
     if ($package === null || $normalizedCodes === null || count($normalizedCodes) !== (int) $package['quantity']) {
         throw new InvalidArgumentException('O pacote exige a quantidade exata de referências selecionadas.');
     }
+    sort($normalizedCodes, SORT_STRING);
+    $modelsJson = json_encode($normalizedCodes, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
 
     $orderId = substr(hash('sha256', 'elc-assistant-order|' . $wamid), 0, 32);
     $externalReference = 'ELC-' . strtoupper(substr(hash('sha256', 'elc-assistant-ref|' . $wamid), 0, 24));
     $find = $pdo->prepare('SELECT * FROM orders WHERE external_reference = :reference LIMIT 1');
     $find->execute([':reference' => $externalReference]);
     $existing = $find->fetch();
-    if (is_array($existing) && trim((string) ($existing['checkout_url'] ?? '')) !== '') {
-        return ['checkout_url' => (string) $existing['checkout_url'], 'order_reference' => $externalReference];
+    if (is_array($existing)) {
+        $existingCodes = json_decode((string) ($existing['selected_model_codes'] ?? ''), true);
+        if (!is_array($existingCodes)) {
+            throw new RuntimeException('Referências do pedido anterior estão inválidas.', 409);
+        }
+        sort($existingCodes, SORT_STRING);
+        if ((string) $existing['package_id'] !== $packageId
+            || $existingCodes !== $normalizedCodes
+            || !hash_equals((string) ($existing['customer_whatsapp'] ?? ''), $customerPhone)) {
+            throw new RuntimeException('Já existe um pedido diferente vinculado a esta mensagem.', 409);
+        }
+        if (trim((string) ($existing['checkout_url'] ?? '')) !== '') {
+            return ['checkout_url' => (string) $existing['checkout_url'], 'order_reference' => $externalReference];
+        }
     }
 
     if (!is_array($existing)) {
@@ -473,16 +487,11 @@ function elc_assistant_create_checkout(
             ':package_id' => $packageId,
             ':package_name' => $package['name'],
             ':amount_cents' => $package['amount_cents'],
-            ':models' => json_encode($normalizedCodes, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+            ':models' => $modelsJson,
             ':customer_whatsapp' => $customerPhone,
             ':created_at' => $now,
             ':updated_at' => $now,
         ]);
-    } else {
-        if ((string) $existing['package_id'] !== $packageId
-            || (string) $existing['selected_model_codes'] !== json_encode($normalizedCodes, JSON_UNESCAPED_UNICODE)) {
-            throw new RuntimeException('Já existe um pedido diferente vinculado a esta mensagem.', 409);
-        }
     }
 
     $publicBaseUrl = rtrim((string) ($config['public_base_url'] ?? ''), '/');

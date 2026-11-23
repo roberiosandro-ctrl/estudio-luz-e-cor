@@ -36,11 +36,21 @@ try {
 
     // A assinatura do Mercado Pago usa o data.id recebido na query string.
     // Não aceitar o ID somente do corpo, pois isso alteraria o manifesto assinado.
+    $queryType = (string) ($_GET['type'] ?? $_GET['topic'] ?? '');
     $paymentId = trim((string) ($_GET['data_id'] ?? $_GET['data.id'] ?? ''));
+    $bodyPaymentId = trim((string) ($body['data']['id'] ?? ''));
     $requestId = trim((string) ($_SERVER['HTTP_X_REQUEST_ID'] ?? ''));
     $signatureHeader = trim((string) ($_SERVER['HTTP_X_SIGNATURE'] ?? ''));
-    if ($paymentId === '' || !preg_match('/^[0-9]+$/', $paymentId) || $requestId === '' || $signatureHeader === '') {
-        elc_json_response(400, ['ok' => false, 'message' => 'Cabeçalhos ou identificador ausentes.']);
+    if (($queryType !== '' && $queryType !== 'payment')
+        || $paymentId === ''
+        || !preg_match('/^[0-9]+$/', $paymentId)
+        || ($bodyPaymentId !== '' && !hash_equals($paymentId, $bodyPaymentId))
+        || $requestId === ''
+        || strlen($requestId) > 200
+        || preg_match('/[\\x00-\\x1F\\x7F]/', $requestId)
+        || $signatureHeader === ''
+        || strlen($signatureHeader) > 512) {
+        elc_json_response(400, ['ok' => false, 'message' => 'Cabeçalhos ou identificador ausentes ou inválidos.']);
     }
 
     $signatureParts = [];
@@ -65,6 +75,15 @@ try {
 
     $payment = elc_mp_request($config, 'GET', '/v1/payments/' . rawurlencode($paymentId));
     if ((string) ($payment['id'] ?? '') !== $paymentId) {
+        elc_json_response(200, ['ok' => true, 'ignored' => true]);
+    }
+
+    // Impedir que uma notificação de teste atualize pedido de produção, ou vice-versa.
+    $expectedLiveMode = (string) ($config['environment'] ?? 'test') === 'production';
+    if (!array_key_exists('live_mode', $payment)
+        || !is_bool($payment['live_mode'])
+        || $payment['live_mode'] !== $expectedLiveMode) {
+        error_log('Estudio Luz e Cor: ambiente do pagamento não corresponde ao ambiente configurado.');
         elc_json_response(200, ['ok' => true, 'ignored' => true]);
     }
 

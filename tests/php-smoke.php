@@ -44,6 +44,17 @@ check(!elc_verify_webhook_signature($signature, $requestId, $dataId, ''), 'rejei
 $codes = elc_allowed_model_codes();
 check(count($codes) === 60, 'catálogo deve permitir 60 códigos');
 check(count(array_unique($codes)) === 60, 'códigos permitidos devem ser únicos');
+check(elc_normalize_model_codes(['ELEG-01', 'FASH-03']) === ['ELEG-01', 'FASH-03'], 'aceita referências misturadas entre coleções');
+check(elc_normalize_model_codes(['ELEG-01', 'ELEG-01']) === ['ELEG-01'], 'remove referências repetidas');
+check(elc_normalize_model_codes(['ELEG-01', 'INVALID-99']) === null, 'rejeita referência fora do catálogo');
+check(elc_normalize_model_codes([]) === null, 'rejeita seleção vazia');
+check(elc_normalize_model_codes(array_fill(0, 61, 'ELEG-01')) === null, 'rejeita mais de 60 entradas');
+
+$preferenceOrder = ['preference_id' => 'pref-test-1', 'external_reference' => 'ELC-TEST-1'];
+$matchingPayment = ['id' => '1001', 'preference_id' => 'pref-test-1'];
+$wrongPreferencePayment = ['id' => '1001', 'preference_id' => 'pref-test-2'];
+check(elc_verify_preference_binding([], $preferenceOrder, $matchingPayment), 'aceita vínculo direto com a preferência correta');
+check(!elc_verify_preference_binding([], $preferenceOrder, $wrongPreferencePayment), 'rejeita preferência diferente');
 check(elc_amount_to_cents('29.90') === 2990, 'conversão monetária para centavos');
 check(elc_amount_to_cents('129.9') === 12990, 'conversão com uma casa decimal');
 check(elc_amount_to_cents('29.901') === null, 'rejeita mais de duas casas decimais');

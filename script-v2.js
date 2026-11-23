@@ -268,6 +268,10 @@
       selected.delete(model.code);
       showToast(`${model.code} removido da seleção.`);
     } else {
+      if (selectedPackage && selected.size >= selectedPackage.quantity) {
+        showToast(`Este pacote permite exatamente ${selectedPackage.quantity} referências. Remova uma antes de adicionar outra.`);
+        return;
+      }
       selected.set(model.code, {
         code: model.code,
         title: model.title || model.code,

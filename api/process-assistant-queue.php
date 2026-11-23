@@ -103,6 +103,10 @@ try {
                 $history
             );
 
+            if ($answer['checkout_intent'] && !$customerAuthorizedCheckout) {
+                $reply .= "\\n\\nPara sua segurança, só vou gerar o link quando você confirmar que deseja finalizar a compra. Se quiser, responda: Pode gerar meu link de pagamento.";
+            }
+
             if ($answer['checkout_intent'] && $customerAuthorizedCheckout) {
                 $package = is_string($packageId) ? (elc_packages()[$packageId] ?? null) : null;
                 $validSelection = is_array($package)

@@ -28,14 +28,28 @@ function elc_private_config_path(): string
     return '/home/u643738877/domains/rsmtrafegopago.online/private/mercadopago-config.php';
 }
 
+function elc_path_is_within(string $path, string $directory): bool
+{
+    return $path === $directory
+        || strpos($path, rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) === 0;
+}
+
 function elc_load_config(): array
 {
     $path = elc_private_config_path();
-    if (!is_file($path) || !is_readable($path)) {
-        throw new RuntimeException('Configuração privada ainda não instalada.');
+    $realConfigPath = realpath($path);
+    $documentRoot = isset($_SERVER['DOCUMENT_ROOT'])
+        ? realpath((string) $_SERVER['DOCUMENT_ROOT'])
+        : false;
+
+    if (is_link($path) || $realConfigPath === false || !is_file($realConfigPath) || !is_readable($realConfigPath)) {
+        throw new RuntimeException('Configuração privada ainda não instalada ou caminho inválido.');
+    }
+    if ($documentRoot !== false && elc_path_is_within($realConfigPath, $documentRoot)) {
+        throw new RuntimeException('A configuração privada não pode ficar dentro da pasta pública.');
     }
 
-    $config = require $path;
+    $config = require $realConfigPath;
     if (!is_array($config)) {
         throw new RuntimeException('Configuração privada inválida.');
     }
@@ -51,8 +65,11 @@ function elc_load_config(): array
 function elc_database(array $config): PDO
 {
     $databasePath = $config['database_path'] ?? '';
-    if (!is_string($databasePath) || $databasePath === '') {
-        throw new RuntimeException('Caminho privado do banco não configurado.');
+    if (!is_string($databasePath) || $databasePath === '' || $databasePath[0] !== DIRECTORY_SEPARATOR) {
+        throw new RuntimeException('Caminho absoluto privado do banco não configurado.');
+    }
+    if (is_link($databasePath)) {
+        throw new RuntimeException('O arquivo do banco não pode ser um link simbólico.');
     }
 
     $privateDirectory = realpath(dirname($databasePath));
@@ -60,8 +77,16 @@ function elc_database(array $config): PDO
     if ($privateDirectory === false || !is_dir($privateDirectory)) {
         throw new RuntimeException('Diretório privado do banco não encontrado.');
     }
-    if ($documentRoot !== false && ($privateDirectory === $documentRoot || strpos($privateDirectory, $documentRoot . DIRECTORY_SEPARATOR) === 0)) {
+    if ($documentRoot !== false && elc_path_is_within($privateDirectory, $documentRoot)) {
         throw new RuntimeException('O banco de dados não pode ficar dentro da pasta pública.');
+    }
+
+    if (is_file($databasePath)) {
+        $realDatabasePath = realpath($databasePath);
+        if ($realDatabasePath === false
+            || ($documentRoot !== false && elc_path_is_within($realDatabasePath, $documentRoot))) {
+            throw new RuntimeException('O arquivo do banco não está em um caminho privado válido.');
+        }
     }
 
     $pdo = new PDO('sqlite:' . $databasePath, null, null, [
@@ -248,6 +273,12 @@ function elc_rate_limit(PDO $pdo, int $limit = 12, int $windowSeconds = 600): vo
             elc_json_response(429, ['ok' => false, 'message' => 'Muitas tentativas. Aguarde alguns minutos e tente novamente.']);
         }
 
+        // Remover buckets antigos periodicamente para impedir crescimento ilimitado da tabela.
+        if ($bucket % ($windowSeconds * 6) === 0) {
+            $cleanup = $pdo->prepare('DELETE FROM rate_limits WHERE bucket_start < :cutoff');
+            $cleanup->execute([':cutoff' => $bucket - ($windowSeconds * 6)]);
+        }
+
         $upsert = $pdo->prepare(
             'INSERT INTO rate_limits (ip_hash, bucket_start, hits) VALUES (:ip, :bucket, 1)
              ON CONFLICT(ip_hash, bucket_start) DO UPDATE SET hits = hits + 1'
@@ -294,6 +325,16 @@ function elc_mp_request(array $config, string $method, string $path, ?array $pay
         throw new RuntimeException('Credencial privada do Mercado Pago ainda não configurada.');
     }
 
+    $method = strtoupper($method);
+    if (!in_array($method, ['GET', 'POST', 'PUT'], true)) {
+        throw new RuntimeException('Método HTTP não permitido para a API Mercado Pago.');
+    }
+    if ($idempotencyKey !== null
+        && ($idempotencyKey === '' || strlen($idempotencyKey) > 128
+            || !preg_match('/^[A-Za-z0-9._:-]+$/', $idempotencyKey))) {
+        throw new RuntimeException('Chave de idempotência inválida.');
+    }
+
     $baseUrl = rtrim((string) ($config['api_base_url'] ?? 'https://api.mercadopago.com'), '/');
     $baseParts = parse_url($baseUrl);
     if (!is_array($baseParts)
@@ -319,12 +360,13 @@ function elc_mp_request(array $config, string $method, string $path, ?array $pay
     $curl = curl_init($url);
     curl_setopt_array($curl, [
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_CUSTOMREQUEST => strtoupper($method),
+        CURLOPT_CUSTOMREQUEST => $method,
         CURLOPT_HTTPHEADER => $headers,
         CURLOPT_CONNECTTIMEOUT => 3,
         CURLOPT_TIMEOUT => 9,
         CURLOPT_SSL_VERIFYPEER => true,
         CURLOPT_SSL_VERIFYHOST => 2,
+        CURLOPT_FOLLOWLOCATION => false,
     ]);
     if ($payload !== null) {
         curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));

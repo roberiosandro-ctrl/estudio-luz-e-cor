@@ -3,6 +3,77 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
 
+function elc_receive_fraud_alert(array $config, array $body): void
+{
+    $queryType = (string) ($_GET['type'] ?? $_GET['topic'] ?? '');
+    $queryDataId = trim((string) ($_GET['data_id'] ?? $_GET['data.id'] ?? ''));
+    $bodyId = trim((string) ($body['id'] ?? ''));
+    $paymentId = trim((string) ($body['data']['payment_id'] ?? ''));
+    $merchantOrderId = trim((string) ($body['data']['merchant_order'] ?? ''));
+    $requestId = trim((string) ($_SERVER['HTTP_X_REQUEST_ID'] ?? ''));
+    $signatureHeader = trim((string) ($_SERVER['HTTP_X_SIGNATURE'] ?? ''));
+    $webhookSecret = trim((string) ($config['webhook_secret'] ?? ''));
+
+    if ($queryType !== 'stop_delivery_op_wh'
+        || $queryDataId === ''
+        || !preg_match('/^[0-9]+$/', $queryDataId)
+        || $bodyId === ''
+        || !hash_equals($queryDataId, $bodyId)
+        || $paymentId === ''
+        || !hash_equals($queryDataId, $paymentId)
+        || !preg_match('/^[0-9]+$/', $merchantOrderId)
+        || !is_string($body['date_created'] ?? null)
+        || trim((string) $body['date_created']) === ''
+        || strlen((string) $body['date_created']) > 64) {
+        elc_json_response(400, ['ok' => false, 'message' => 'Dados do alerta de fraude inválidos.']);
+    }
+
+    if (!elc_verify_webhook_signature($signatureHeader, $requestId, $queryDataId, $webhookSecret)) {
+        elc_json_response(401, ['ok' => false, 'message' => 'Assinatura inválida.']);
+    }
+
+    $expectedLiveMode = (string) ($config['environment'] ?? 'test') === 'production';
+    if (!is_bool($body['live_mode'] ?? null) || $body['live_mode'] !== $expectedLiveMode) {
+        elc_json_response(200, ['ok' => true, 'ignored' => true]);
+    }
+
+    $sellerUserId = trim((string) ($config['seller_user_id'] ?? ''));
+    $eventUserId = trim((string) ($body['user_id'] ?? ''));
+    if ($expectedLiveMode && $sellerUserId === '') {
+        throw new RuntimeException('ID da conta vendedora não configurado para alertas de fraude em produção.');
+    }
+    if ($eventUserId === '' || !preg_match('/^[0-9]+$/', $eventUserId)
+        || ($sellerUserId !== '' && !hash_equals($sellerUserId, $eventUserId))) {
+        elc_json_response(200, ['ok' => true, 'ignored' => true]);
+    }
+
+    $createdAt = (string) $body['date_created'];
+    if (strtotime($createdAt) === false) {
+        elc_json_response(400, ['ok' => false, 'message' => 'Data do alerta de fraude inválida.']);
+    }
+
+    // O alerta é persistido antes de qualquer chamada externa. O Mercado Pago não
+    // reenvia automaticamente este tópico se o servidor não confirmar o recebimento.
+    $pdo = elc_database($config);
+    $eventKey = hash('sha256', 'stop_delivery_op_wh|' . $paymentId . '|' . $merchantOrderId . '|' . $createdAt);
+    $insert = $pdo->prepare(
+        'INSERT OR IGNORE INTO fraud_alerts
+         (event_key, payment_id, merchant_order_id, live_mode, status, attempts, next_attempt_at, created_at, updated_at)
+         VALUES (:event_key, :payment_id, :merchant_order_id, :live_mode, "queued", 0, 0, :created_at, :updated_at)'
+    );
+    $now = gmdate('c');
+    $insert->execute([
+        ':event_key' => $eventKey,
+        ':payment_id' => $paymentId,
+        ':merchant_order_id' => $merchantOrderId,
+        ':live_mode' => $expectedLiveMode ? 1 : 0,
+        ':created_at' => $now,
+        ':updated_at' => $now,
+    ]);
+
+    elc_json_response(200, ['ok' => true, 'queued' => true]);
+}
+
 if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     header('Allow: POST');
     elc_json_response(405, ['ok' => false, 'message' => 'Método não permitido.']);
@@ -30,6 +101,9 @@ try {
     }
 
     $type = (string) ($body['type'] ?? $_GET['type'] ?? $_GET['topic'] ?? '');
+    if ($type === 'stop_delivery_op_wh') {
+        elc_receive_fraud_alert($config, $body);
+    }
     if ($type !== 'payment') {
         elc_json_response(200, ['ok' => true, 'ignored' => true]);
     }

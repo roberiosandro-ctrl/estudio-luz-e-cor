@@ -162,6 +162,26 @@ function elc_database(array $config): PDO
         )'
     );
     $pdo->exec('CREATE INDEX IF NOT EXISTS idx_fraud_alerts_queue ON fraud_alerts(status, next_attempt_at)');
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS notification_outbox (
+            id TEXT PRIMARY KEY,
+            order_id TEXT NOT NULL,
+            channel TEXT NOT NULL,
+            event_type TEXT NOT NULL,
+            recipient TEXT NOT NULL,
+            payload_json TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT "queued",
+            attempts INTEGER NOT NULL DEFAULT 0,
+            next_attempt_at INTEGER NOT NULL DEFAULT 0,
+            locked_until INTEGER,
+            provider_message_id TEXT,
+            last_error TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL,
+            UNIQUE(order_id, channel, event_type)
+        )'
+    );
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_notification_outbox_queue ON notification_outbox(status, next_attempt_at)');
 
     return $pdo;
 }
@@ -283,6 +303,48 @@ function elc_verify_preference_binding(array $config, array $order, array $payme
         }
     }
     return false;
+}
+
+function elc_format_brl_cents(int $amountCents): string
+{
+    return 'R$ ' . number_format($amountCents / 100, 2, ',', '.');
+}
+
+function elc_whatsapp_template_message(
+    string $recipient,
+    string $templateName,
+    string $language,
+    string $orderReference,
+    string $packageName,
+    int $amountCents
+): array {
+    if (!preg_match('/^[1-9][0-9]{9,14}$/', $recipient)
+        || !preg_match('/^[a-z0-9_]{1,512}$/', $templateName)
+        || !preg_match('/^[a-z]{2}_[A-Z]{2}$/', $language)
+        || $orderReference === ''
+        || $packageName === ''
+        || $amountCents < 1) {
+        throw new InvalidArgumentException('Configuração ou dados do template WhatsApp inválidos.');
+    }
+
+    return [
+        'messaging_product' => 'whatsapp',
+        'recipient_type' => 'individual',
+        'to' => $recipient,
+        'type' => 'template',
+        'template' => [
+            'name' => $templateName,
+            'language' => ['code' => $language],
+            'components' => [[
+                'type' => 'body',
+                'parameters' => [
+                    ['type' => 'text', 'text' => $orderReference],
+                    ['type' => 'text', 'text' => $packageName],
+                    ['type' => 'text', 'text' => elc_format_brl_cents($amountCents)],
+                ],
+            ]],
+        ],
+    ];
 }
 
 function elc_fraud_action_for_payment_status(string $status): string

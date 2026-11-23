@@ -143,6 +143,25 @@ function elc_database(array $config): PDO
             PRIMARY KEY (ip_hash, bucket_start)
         )'
     );
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS fraud_alerts (
+            event_key TEXT PRIMARY KEY,
+            payment_id TEXT NOT NULL,
+            merchant_order_id TEXT NOT NULL,
+            live_mode INTEGER NOT NULL,
+            status TEXT NOT NULL DEFAULT "queued",
+            attempts INTEGER NOT NULL DEFAULT 0,
+            next_attempt_at INTEGER NOT NULL DEFAULT 0,
+            locked_until INTEGER,
+            external_reference TEXT,
+            order_id TEXT,
+            refund_id TEXT,
+            last_error TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )'
+    );
+    $pdo->exec('CREATE INDEX IF NOT EXISTS idx_fraud_alerts_queue ON fraud_alerts(status, next_attempt_at)');
 
     return $pdo;
 }
@@ -266,11 +285,30 @@ function elc_verify_preference_binding(array $config, array $order, array $payme
     return false;
 }
 
+function elc_fraud_action_for_payment_status(string $status): string
+{
+    if (in_array($status, ['pending', 'in_process', 'authorized'], true)) {
+        return 'cancel';
+    }
+    if ($status === 'approved') {
+        return 'refund';
+    }
+    if (in_array($status, ['cancelled', 'refunded', 'charged_back'], true)) {
+        return 'already_resolved';
+    }
+    return 'manual_review';
+}
+
 function elc_should_apply_payment_update(array $order, string $paymentId, string $newStatus, int $newUpdatedAt): bool
 {
     $currentStatus = (string) ($order['status'] ?? '');
     $currentPaymentId = (string) ($order['payment_id'] ?? '');
     $samePayment = $currentPaymentId === '' || $currentPaymentId === $paymentId;
+
+    // Um alerta de fraude bloqueia qualquer atualização normal de pagamento.
+    if (strpos($currentStatus, 'fraud_alert_') === 0) {
+        return false;
+    }
 
     if ($currentStatus === 'charged_back') {
         return false;

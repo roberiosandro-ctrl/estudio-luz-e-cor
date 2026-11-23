@@ -70,27 +70,32 @@
           <span class="pricing-quantity">02 FOTOS</span>
           <strong class="pricing-value">R$ 29,90</strong>
           <span class="pricing-note">Para começar</span>
+          <button class="package-select-button" type="button" data-package-id="fotos-02" data-quantity="2" data-price="29,90" aria-pressed="false">Selecionar pacote</button>
         </article>
         <article class="pricing-card">
           <span class="pricing-quantity">05 FOTOS</span>
           <strong class="pricing-value">R$ 54,90</strong>
           <span class="pricing-note">Mais possibilidades</span>
+          <button class="package-select-button" type="button" data-package-id="fotos-05" data-quantity="5" data-price="54,90" aria-pressed="false">Selecionar pacote</button>
         </article>
         <article class="pricing-card">
           <span class="pricing-quantity">10 FOTOS</span>
           <strong class="pricing-value">R$ 89,90</strong>
           <span class="pricing-note">Varie seus estilos</span>
+          <button class="package-select-button" type="button" data-package-id="fotos-10" data-quantity="10" data-price="89,90" aria-pressed="false">Selecionar pacote</button>
         </article>
         <article class="pricing-card">
           <span class="pricing-quantity">15 FOTOS</span>
           <strong class="pricing-value">R$ 109,90</strong>
           <span class="pricing-note">Mais opções para escolher</span>
+          <button class="package-select-button" type="button" data-package-id="fotos-15" data-quantity="15" data-price="109,90" aria-pressed="false">Selecionar pacote</button>
         </article>
         <article class="pricing-card pricing-card-featured">
           <span class="pricing-highlight">MAIOR PACOTE</span>
           <span class="pricing-quantity">20 FOTOS</span>
           <strong class="pricing-value">R$ 129,90</strong>
           <span class="pricing-note">Mais variedade para seu ensaio</span>
+          <button class="package-select-button" type="button" data-package-id="fotos-20" data-quantity="20" data-price="129,90" aria-pressed="false">Selecionar pacote</button>
         </article>
       </div>
       <div class="pricing-footer">
@@ -212,7 +217,13 @@
   <aside class="selection-panel" id="selectionPanel" aria-hidden="true" inert>
     <div class="panel-header"><div><p class="kicker">SUA ESCOLHA</p><h2>Modelos selecionados</h2></div><button class="panel-close" id="closeSelection" type="button" aria-label="Fechar seleção">×</button></div>
     <div class="selection-list" id="selectionList"><p class="empty-selection">Você ainda não selecionou um modelo.</p></div>
-    <div class="panel-footer"><p>Esta seleção servirá como referência para o seu atendimento.</p><button class="request-button" id="requestButton" type="button" disabled>Enviar seleção pelo WhatsApp</button><button class="clear-button" id="clearSelection" type="button" disabled>Limpar seleção</button></div>
+    <div class="panel-footer">
+      <p>Escolha um pacote e selecione exatamente a quantidade de referências correspondente.</p>
+      <div class="selected-package-summary" id="selectedPackageSummary" aria-live="polite">Nenhum pacote selecionado.</div>
+      <button class="checkout-button" id="checkoutButton" type="button" disabled>Pagar com Mercado Pago</button>
+      <button class="request-button" id="requestButton" type="button" disabled>Enviar seleção pelo WhatsApp</button>
+      <button class="clear-button" id="clearSelection" type="button" disabled>Limpar seleção</button>
+    </div>
   </aside>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="catalog-data-v2.js"></script>

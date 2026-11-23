@@ -14,6 +14,7 @@ Criar dentro dela a pasta `api/` e copiar somente:
 - `api/create-preference.php`
 - `api/mercadopago-webhook.php`
 - `api/health.php`
+- `api/process-fraud-alerts.php` (executar exclusivamente por PHP CLI/cron, nunca via navegador)
 
 Não copiar documentação. **Não copiar nem substituir** `index-v2.html`, `script-v2.js`, `catalog-data-v2.js`, CSS, imagens ou quaisquer outros arquivos atuais. A correção de WhatsApp feita diretamente na Hostinger deve ser preservada.
 
@@ -38,6 +39,8 @@ return [
     'payments_enabled' => false,
     'access_token' => '',
     'webhook_secret' => '',
+    'seller_user_id' => '', // preencher somente quando houver credencial/conta de teste confirmada
+    'fraud_auto_refund_enabled' => false, // não ativar antes dos testes sandbox
     'health_token' => '', // gerar um valor longo e aleatório, somente no servidor
     'api_base_url' => 'https://api.mercadopago.com',
     'public_base_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2',

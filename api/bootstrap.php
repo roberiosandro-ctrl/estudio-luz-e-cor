@@ -34,18 +34,25 @@ function elc_path_is_within(string $path, string $directory): bool
         || strpos($path, rtrim($directory, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR) === 0;
 }
 
+function elc_document_root(): ?string
+{
+    $candidate = isset($_SERVER['DOCUMENT_ROOT']) && trim((string) $_SERVER['DOCUMENT_ROOT']) !== ''
+        ? (string) $_SERVER['DOCUMENT_ROOT']
+        : dirname(__DIR__);
+    $resolved = realpath($candidate);
+    return $resolved !== false ? $resolved : null;
+}
+
 function elc_load_config(): array
 {
     $path = elc_private_config_path();
     $realConfigPath = realpath($path);
-    $documentRoot = isset($_SERVER['DOCUMENT_ROOT'])
-        ? realpath((string) $_SERVER['DOCUMENT_ROOT'])
-        : false;
+    $documentRoot = elc_document_root();
 
     if (is_link($path) || $realConfigPath === false || !is_file($realConfigPath) || !is_readable($realConfigPath)) {
         throw new RuntimeException('Configuração privada ainda não instalada ou caminho inválido.');
     }
-    if ($documentRoot !== false && elc_path_is_within($realConfigPath, $documentRoot)) {
+    if ($documentRoot !== null && elc_path_is_within($realConfigPath, $documentRoot)) {
         throw new RuntimeException('A configuração privada não pode ficar dentro da pasta pública.');
     }
 
@@ -73,18 +80,18 @@ function elc_database(array $config): PDO
     }
 
     $privateDirectory = realpath(dirname($databasePath));
-    $documentRoot = isset($_SERVER['DOCUMENT_ROOT']) ? realpath((string) $_SERVER['DOCUMENT_ROOT']) : false;
+    $documentRoot = elc_document_root();
     if ($privateDirectory === false || !is_dir($privateDirectory)) {
         throw new RuntimeException('Diretório privado do banco não encontrado.');
     }
-    if ($documentRoot !== false && elc_path_is_within($privateDirectory, $documentRoot)) {
+    if ($documentRoot !== null && elc_path_is_within($privateDirectory, $documentRoot)) {
         throw new RuntimeException('O banco de dados não pode ficar dentro da pasta pública.');
     }
 
     if (is_file($databasePath)) {
         $realDatabasePath = realpath($databasePath);
         if ($realDatabasePath === false
-            || ($documentRoot !== false && elc_path_is_within($realDatabasePath, $documentRoot))) {
+            || ($documentRoot !== null && elc_path_is_within($realDatabasePath, $documentRoot))) {
             throw new RuntimeException('O arquivo do banco não está em um caminho privado válido.');
         }
     }

@@ -27,7 +27,7 @@ try {
 
     $modelCodes = $input['model_codes'] ?? null;
     if (!is_array($modelCodes) || count($modelCodes) < 1 || count($modelCodes) > 60) {
-        elc_json_response(422, ['ok' => false, 'message' => 'Selecione entre 1 e 60 referências do catálogo.']);
+        elc_json_response(422, ['ok' => false, 'message' => 'Selecione referências válidas para o pacote escolhido.']);
     }
     $allowedCodes = array_flip(elc_allowed_model_codes());
     $validatedCodes = [];
@@ -38,6 +38,12 @@ try {
         $validatedCodes[$code] = true;
     }
     $modelCodes = array_keys($validatedCodes);
+    if (count($modelCodes) !== (int) $package['quantity']) {
+        elc_json_response(422, [
+            'ok' => false,
+            'message' => 'Este pacote exige exatamente ' . (int) $package['quantity'] . ' referências diferentes. Você selecionou ' . count($modelCodes) . '.',
+        ]);
+    }
 
     $now = gmdate('c');
     $orderId = bin2hex(random_bytes(16));

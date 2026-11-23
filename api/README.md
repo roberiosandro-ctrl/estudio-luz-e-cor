@@ -15,7 +15,7 @@ Esta pasta contém somente a camada inicial de backend. Ela não altera o catál
 - `POST /api/create-preference.php`: recebe JSON como `{"package_id":"fotos-05","model_codes":["ELEG-01","ROM-02"]}`.
 - `POST /api/mercadopago-webhook.php`: recebe notificações do Mercado Pago.
 
-O Access Token nunca é enviado ao navegador. A URL de retorno do checkout não aprova pagamentos; a confirmação depende do Webhook validado e da consulta à API.
+O Access Token nunca é enviado ao navegador. A URL de retorno do checkout não aprova pagamentos; a confirmação depende do Webhook validado e da consulta à API. Comprovantes enviados pelo comprador nunca confirmam pagamento.
 
 ## Pacotes validados no servidor
 
@@ -46,6 +46,7 @@ return [
     'payments_enabled' => false,
     'access_token' => '',
     'webhook_secret' => '',
+    'seller_user_id' => '', // ID numérico da conta vendedora; obrigatório em produção
     'health_token' => '', // gerar valor longo e aleatório, somente no servidor
     'api_base_url' => 'https://api.mercadopago.com',
     'public_base_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2',
@@ -63,12 +64,15 @@ Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token
 
 1. Pagamentos ficam bloqueados enquanto `payments_enabled` não for exatamente `true`.
 2. A API de destino é limitada a HTTPS em `api.mercadopago.com`.
-3. O Webhook usa o `data.id` da query string na validação HMAC SHA-256; em PHP, esse parâmetro pode aparecer normalizado como `data_id`.
-4. O servidor consulta o pagamento e a preferência pelo ID salvo, conferindo a referência externa; quando a API informa o pedido comercial, confere também preferência e pagamento associados.
-5. Valor é comparado em centavos inteiros e moeda deve ser BRL.
-6. Eventos repetidos não reaplicam atualizações. Eventos antigos não rebaixam um pagamento aprovado, reembolsado ou contestado.
-7. O SQLite inclui migração da coluna de data de atualização do pagamento.
-8. O endpoint de diagnóstico exige `X-Health-Token`; sem token privado configurado responde 404. A verificação é somente leitura e apenas confere a existência e as permissões do arquivo SQLite, sem abrir o banco para escrita.
+3. O Webhook exige `data.id` na query e no corpo, com valores idênticos, além de `x-request-id` e `x-signature`; a assinatura HMAC-SHA256 é conferida com comparação em tempo constante.
+4. O servidor consulta o pagamento diretamente na API oficial; não confia em comprovantes, prints, PDFs, redirecionamentos ou dados enviados pelo navegador.
+5. A referência externa, a preferência e o pagamento precisam estar vinculados; se a API não fornecer um vínculo direto verificável, o evento é recusado.
+6. O ambiente `live_mode` do pagamento precisa coincidir com `environment` configurado. Em produção, `seller_user_id` é obrigatório e `collector_id` precisa corresponder à conta vendedora configurada.
+7. Valor é comparado em centavos inteiros e moeda deve ser BRL.
+8. Eventos repetidos não reaplicam atualizações. Eventos antigos não rebaixam um pagamento aprovado, reembolsado ou contestado.
+9. Não se aplica uma janela curta de idade ao timestamp da assinatura: o Mercado Pago pode reenviar Webhooks em tentativas posteriores; a autenticidade é verificada pela assinatura e a repetição é controlada por idempotência e data de atualização do pagamento.
+10. O SQLite inclui migração da coluna de data de atualização do pagamento.
+11. O endpoint de diagnóstico exige `X-Health-Token`; sem token privado configurado responde 404. A verificação é somente leitura e apenas confere a existência e as permissões do arquivo SQLite, sem abrir o banco para escrita.
 
 ## Limites desta etapa
 

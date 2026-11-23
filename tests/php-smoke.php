@@ -42,7 +42,7 @@ check($publicDatabaseRejected, 'rejeita SQLite dentro da raiz pública também n
 $unsafeConfigDirectory = $documentRoot . '/tests/.elc-private-config-' . bin2hex(random_bytes(4));
 check(mkdir($unsafeConfigDirectory, 0700), 'cria diretório temporário de teste de configuração');
 $unsafeConfigPath = $unsafeConfigDirectory . '/mercadopago-config.php';
-file_put_contents($unsafeConfigPath, "<?php return [];\\n");
+file_put_contents($unsafeConfigPath, "<?php return [];");
 putenv('ELC_MP_CONFIG_PATH=' . $unsafeConfigPath);
 $publicConfigRejected = false;
 try {

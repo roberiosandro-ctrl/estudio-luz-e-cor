@@ -41,7 +41,7 @@ try {
     $bodyPaymentId = trim((string) ($body['data']['id'] ?? ''));
     $requestId = trim((string) ($_SERVER['HTTP_X_REQUEST_ID'] ?? ''));
     $signatureHeader = trim((string) ($_SERVER['HTTP_X_SIGNATURE'] ?? ''));
-    if (($queryType !== '' && $queryType !== 'payment')
+    if ($queryType !== 'payment'
         || $paymentId === ''
         || !preg_match('/^[0-9]+$/', $paymentId)
         || $bodyPaymentId === ''
@@ -54,23 +54,7 @@ try {
         elc_json_response(400, ['ok' => false, 'message' => 'Cabeçalhos ou identificador ausentes ou inválidos.']);
     }
 
-    $signatureParts = [];
-    foreach (explode(',', $signatureHeader) as $part) {
-        $pair = explode('=', trim($part), 2);
-        if (count($pair) === 2) {
-            $signatureParts[trim($pair[0])] = trim($pair[1]);
-        }
-    }
-    $timestamp = $signatureParts['ts'] ?? '';
-    $receivedSignature = $signatureParts['v1'] ?? '';
-    if ($timestamp === '' || !preg_match('/^[0-9]+$/', $timestamp)
-        || $receivedSignature === '' || !preg_match('/^[a-fA-F0-9]{64}$/', $receivedSignature)) {
-        elc_json_response(401, ['ok' => false, 'message' => 'Assinatura inválida.']);
-    }
-
-    $manifest = 'id:' . strtolower($paymentId) . ';request-id:' . $requestId . ';ts:' . $timestamp . ';';
-    $expectedSignature = hash_hmac('sha256', $manifest, $webhookSecret);
-    if (!hash_equals($expectedSignature, strtolower($receivedSignature))) {
+    if (!elc_verify_webhook_signature($signatureHeader, $requestId, $paymentId, $webhookSecret)) {
         elc_json_response(401, ['ok' => false, 'message' => 'Assinatura inválida.']);
     }
 

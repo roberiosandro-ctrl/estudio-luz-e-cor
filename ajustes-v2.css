@@ -341,3 +341,53 @@ body::before{background:none}
     text-align:center;
   }
 }
+
+
+/* Seleção de pacote e início seguro do checkout */
+.pricing-card{min-height:218px}
+.pricing-card.is-selected{border:2px solid #493346;box-shadow:0 12px 30px rgba(73,51,70,.12)}
+.package-select-button{
+  width:100%;
+  margin-top:4px;
+  padding:10px 9px;
+  border:1px solid #b67f78;
+  border-radius:999px;
+  background:#fff;
+  color:#493346;
+  font:700 9px/1.2 var(--sans);
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.package-select-button:hover,
+.pricing-card.is-selected .package-select-button{
+  border-color:#493346;
+  background:#493346;
+  color:#fff;
+}
+.selected-package-summary{
+  margin:0 0 12px;
+  color:#766d78;
+  font-size:11px;
+  line-height:1.5;
+}
+.checkout-button{
+  width:100%;
+  margin:0 0 9px;
+  padding:13px 15px;
+  border:1px solid #493346;
+  background:#493346;
+  color:#fff;
+  cursor:pointer;
+  font-size:9px;
+  font-weight:700;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.checkout-button:hover:not(:disabled){background:#67485e}
+.checkout-button:disabled{opacity:.4;cursor:not-allowed}
+.request-button{margin-bottom:9px}
+@media(max-width:680px){
+  .pricing-card{min-height:184px}
+  .package-select-button{font-size:8px;padding:9px 6px}
+}

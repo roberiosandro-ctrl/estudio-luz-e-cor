@@ -25,19 +25,10 @@ try {
         elc_json_response(422, ['ok' => false, 'message' => 'Pacote inválido.']);
     }
 
-    $modelCodes = $input['model_codes'] ?? null;
-    if (!is_array($modelCodes) || count($modelCodes) < 1 || count($modelCodes) > 60) {
+    $modelCodes = elc_normalize_model_codes($input['model_codes'] ?? null);
+    if ($modelCodes === null) {
         elc_json_response(422, ['ok' => false, 'message' => 'Selecione referências válidas para o pacote escolhido.']);
     }
-    $allowedCodes = array_flip(elc_allowed_model_codes());
-    $validatedCodes = [];
-    foreach ($modelCodes as $code) {
-        if (!is_string($code) || !isset($allowedCodes[$code])) {
-            elc_json_response(422, ['ok' => false, 'message' => 'Uma ou mais referências selecionadas são inválidas.']);
-        }
-        $validatedCodes[$code] = true;
-    }
-    $modelCodes = array_keys($validatedCodes);
     if (count($modelCodes) !== (int) $package['quantity']) {
         elc_json_response(422, [
             'ok' => false,

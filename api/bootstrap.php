@@ -428,7 +428,11 @@ function elc_should_apply_payment_update(array $order, string $paymentId, string
 function elc_rate_limit(PDO $pdo, int $limit = 12, int $windowSeconds = 600): void
 {
     $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
-    $ipHash = hash('sha256', $ip . '|' . (string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+    if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+        $ip = 'unknown';
+    }
+    // Não incluir User-Agent: ele é controlado pelo cliente e permitiria contornar o limite.
+    $ipHash = hash('sha256', $ip);
     $bucket = (int) (floor(time() / $windowSeconds) * $windowSeconds);
 
     $pdo->beginTransaction();

@@ -175,6 +175,32 @@ function elc_assistant_catalog(): array
     return $catalog;
 }
 
+function elc_assistant_customer_requested_checkout(string $latestMessage, array $history): bool
+{
+    $message = trim($latestMessage);
+    if (preg_match('/\\b(quero\\s+(comprar|pagar|finalizar)|vou\\s+comprar|pode\\s+(gerar|mandar|enviar)\\s+(o\\s+)?link|manda\\s+(o\\s+)?link|gerar\\s+(o\\s+)?link|finalizar\\s+(a\\s+)?compra)\\b/iu', $message)) {
+        return true;
+    }
+
+    // "Sim", "pode" ou "claro" só autorizam o checkout quando respondem
+    // diretamente a uma pergunta anterior do próprio atendente sobre gerar/enviar o link.
+    $normalized = function_exists('mb_strtolower') ? mb_strtolower($message, 'UTF-8') : strtolower($message);
+    $normalized = preg_replace('/[.!?\\s]+/u', ' ', $normalized);
+    $affirmative = in_array(trim((string) $normalized), ['sim', 'pode', 'claro', 'quero', 'isso', 'pode ser', 'manda'], true);
+    if (!$affirmative) {
+        return false;
+    }
+
+    for ($index = count($history) - 1; $index >= 0; $index--) {
+        if (($history[$index]['role'] ?? '') !== 'assistant') {
+            continue;
+        }
+        $previousReply = (string) ($history[$index]['body'] ?? '');
+        return (bool) preg_match('/(gerar|enviar|mandar).{0,60}link|link.{0,60}(pagamento|checkout)/iu', $previousReply);
+    }
+    return false;
+}
+
 function elc_assistant_system_instructions(): string
 {
     $packages = [];

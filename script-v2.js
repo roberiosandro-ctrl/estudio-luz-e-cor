@@ -359,7 +359,7 @@
       }
 
       const checkoutUrl = new URL(result.checkout_url, window.location.origin);
-      if (checkoutUrl.protocol !== "https:" || !/(^|\\.)mercadopago\\.com\\.br$/i.test(checkoutUrl.hostname)) {
+      if (checkoutUrl.protocol !== "https:" || !/(^|\.)mercadopago\.com\.br$/i.test(checkoutUrl.hostname)) {
         throw new Error("O endereço de pagamento retornado não passou na validação de segurança.");
       }
 
@@ -420,7 +420,7 @@
       const quantity = Number(button.dataset.quantity);
       const price = button.dataset.price || "";
       const id = button.dataset.packageId || "";
-      if (!id || !Number.isInteger(quantity) || quantity < 1 || !/^\\d{1,3},\\d{2}$/.test(price)) {
+      if (!id || !Number.isInteger(quantity) || quantity < 1 || !/^\d{1,3},\d{2}$/.test(price)) {
         showToast("Não foi possível selecionar este pacote.");
         return;
       }

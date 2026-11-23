@@ -147,6 +147,45 @@ function elc_database(array $config): PDO
     return $pdo;
 }
 
+function elc_verify_webhook_signature(string $signatureHeader, string $requestId, string $dataId, string $secret): bool
+{
+    if ($secret === ''
+        || $signatureHeader === ''
+        || strlen($signatureHeader) > 512
+        || $requestId === ''
+        || strlen($requestId) > 200
+        || preg_match('/[\\x00-\\x1F\\x7F]/', $requestId)
+        || !preg_match('/^[0-9]+$/', $dataId)) {
+        return false;
+    }
+
+    $signatureParts = [];
+    foreach (explode(',', $signatureHeader) as $part) {
+        $pair = explode('=', trim($part), 2);
+        if (count($pair) !== 2) {
+            continue;
+        }
+        $key = trim($pair[0]);
+        if (in_array($key, ['ts', 'v1'], true) && array_key_exists($key, $signatureParts)) {
+            return false;
+        }
+        $signatureParts[$key] = trim($pair[1]);
+    }
+
+    $timestamp = $signatureParts['ts'] ?? '';
+    $receivedSignature = $signatureParts['v1'] ?? '';
+    if ($timestamp === '' || !preg_match('/^[0-9]+$/', $timestamp)
+        || $receivedSignature === '' || !preg_match('/^[a-fA-F0-9]{64}$/', $receivedSignature)) {
+        return false;
+    }
+
+    // Não impor janela curta de idade: o Mercado Pago pode reenviar notificações.
+    // A autenticidade é verificada pela assinatura e a repetição pela idempotência.
+    $manifest = 'id:' . strtolower($dataId) . ';request-id:' . $requestId . ';ts:' . $timestamp . ';';
+    $expectedSignature = hash_hmac('sha256', $manifest, $secret);
+    return hash_equals($expectedSignature, strtolower($receivedSignature));
+}
+
 function elc_packages(): array
 {
     return [

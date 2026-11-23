@@ -1,0 +1,11 @@
+# Credenciais e configuração privada do Mercado Pago
+**/mercadopago-config.php
+.env
+.env.*
+!.env.example
+
+# Bancos SQLite e arquivos auxiliares
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*

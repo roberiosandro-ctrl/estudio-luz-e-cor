@@ -444,6 +444,24 @@
     else if (primaryNav?.classList.contains("is-open")) setMenu(false);
   });
 
+  function handleCheckoutReturn() {
+    const params = new URLSearchParams(window.location.search);
+    const returnStatus = params.get("mp_return");
+    const messages = {
+      success: "O checkout retornou com sucesso. A confirmação final será feita pelo sistema; aguarde o aviso do estúdio.",
+      pending: "O pagamento está pendente ou em análise. Aguarde a confirmação do Mercado Pago.",
+      failure: "O pagamento não foi concluído. Você pode selecionar o pacote e tentar novamente."
+    };
+
+    if (!returnStatus || !Object.prototype.hasOwnProperty.call(messages, returnStatus)) return;
+    showToast(messages[returnStatus]);
+
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete("mp_return");
+    cleanUrl.searchParams.delete("external_reference");
+    window.history.replaceState({}, document.title, cleanUrl.pathname + cleanUrl.hash);
+  }
+
   const year = document.getElementById("currentYear");
   if (year) year.textContent = String(new Date().getFullYear());
   setMenu(false);
@@ -451,4 +469,5 @@
   renderCatalog();
   renderInspirations();
   renderSelection();
+  handleCheckoutReturn();
 })();

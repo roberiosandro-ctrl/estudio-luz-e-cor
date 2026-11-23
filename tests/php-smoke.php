@@ -67,4 +67,35 @@ check(!elc_should_apply_payment_update($refunded, '1001', 'approved', 104), 'ree
 $chargedBack = ['status' => 'charged_back', 'payment_id' => '1001', 'payment_updated_at' => 103];
 check(!elc_should_apply_payment_update($chargedBack, '1001', 'approved', 104), 'contestado é estado terminal');
 
+$fraudPending = ['status' => 'fraud_alert_pending', 'payment_id' => '1001', 'payment_updated_at' => 103];
+check(!elc_should_apply_payment_update($fraudPending, '1001', 'approved', 105), 'alerta de fraude bloqueia atualizações normais');
+check(elc_fraud_action_for_payment_status('pending') === 'cancel', 'alerta cancela pagamento pendente');
+check(elc_fraud_action_for_payment_status('in_process') === 'cancel', 'alerta cancela pagamento em processamento');
+check(elc_fraud_action_for_payment_status('authorized') === 'cancel', 'alerta cancela pagamento autorizado');
+check(elc_fraud_action_for_payment_status('approved') === 'refund', 'alerta reembolsa pagamento aprovado');
+check(elc_fraud_action_for_payment_status('refunded') === 'already_resolved', 'pagamento reembolsado já está resolvido');
+check(elc_fraud_action_for_payment_status('charged_back') === 'already_resolved', 'pagamento contestado já está resolvido');
+check(elc_fraud_action_for_payment_status('in_mediation') === 'manual_review', 'status não previsto exige análise manual');
+
+$tempDirectory = sys_get_temp_dir() . '/elc-smoke-' . bin2hex(random_bytes(6));
+check(mkdir($tempDirectory, 0700), 'cria diretório temporário de teste');
+$databasePath = $tempDirectory . '/orders.sqlite';
+try {
+    $pdo = elc_database(['database_path' => $databasePath]);
+    $tableNames = $pdo->query("SELECT name FROM sqlite_master WHERE type = 'table'")->fetchAll(PDO::FETCH_COLUMN);
+    check(in_array('orders', $tableNames, true), 'SQLite cria tabela de pedidos');
+    check(in_array('webhook_events', $tableNames, true), 'SQLite cria tabela de eventos');
+    check(in_array('fraud_alerts', $tableNames, true), 'SQLite cria fila de alertas de fraude');
+    $pdo = null;
+} finally {
+    foreach ([$databasePath, $databasePath . '-wal', $databasePath . '-shm'] as $temporaryFile) {
+        if (is_file($temporaryFile)) {
+            unlink($temporaryFile);
+        }
+    }
+    if (is_dir($tempDirectory)) {
+        rmdir($tempDirectory);
+    }
+}
+
 echo "PHP smoke tests: OK\n";

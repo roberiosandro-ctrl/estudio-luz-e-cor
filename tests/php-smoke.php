@@ -77,6 +77,28 @@ check(elc_fraud_action_for_payment_status('refunded') === 'already_resolved', 'p
 check(elc_fraud_action_for_payment_status('charged_back') === 'already_resolved', 'pagamento contestado já está resolvido');
 check(elc_fraud_action_for_payment_status('in_mediation') === 'manual_review', 'status não previsto exige análise manual');
 
+$whatsappMessage = elc_whatsapp_template_message(
+    '5548998336779',
+    'elc_payment_approved',
+    'pt_BR',
+    'ELC-ABC123',
+    'Pacote 5 fotos',
+    5490
+);
+check($whatsappMessage['messaging_product'] === 'whatsapp', 'payload WhatsApp usa produto correto');
+check($whatsappMessage['to'] === '5548998336779', 'payload WhatsApp usa destinatário configurado');
+check($whatsappMessage['template']['language']['code'] === 'pt_BR', 'payload WhatsApp usa idioma do template');
+check($whatsappMessage['template']['components'][0]['parameters'][2]['text'] === 'R$ 54,90', 'payload WhatsApp formata valor em reais');
+check(elc_format_brl_cents(12990) === 'R$ 129,90', 'formatação de valor em reais');
+
+$invalidRecipientRejected = false;
+try {
+    elc_whatsapp_template_message('123', 'elc_payment_approved', 'pt_BR', 'ELC-ABC123', 'Pacote', 5490);
+} catch (InvalidArgumentException $error) {
+    $invalidRecipientRejected = true;
+}
+check($invalidRecipientRejected, 'rejeita destinatário WhatsApp inválido');
+
 $tempDirectory = sys_get_temp_dir() . '/elc-smoke-' . bin2hex(random_bytes(6));
 check(mkdir($tempDirectory, 0700), 'cria diretório temporário de teste');
 $databasePath = $tempDirectory . '/orders.sqlite';
@@ -86,6 +108,7 @@ try {
     check(in_array('orders', $tableNames, true), 'SQLite cria tabela de pedidos');
     check(in_array('webhook_events', $tableNames, true), 'SQLite cria tabela de eventos');
     check(in_array('fraud_alerts', $tableNames, true), 'SQLite cria fila de alertas de fraude');
+    check(in_array('notification_outbox', $tableNames, true), 'SQLite cria fila de notificações WhatsApp');
     $pdo = null;
 } finally {
     foreach ([$databasePath, $databasePath . '-wal', $databasePath . '-shm'] as $temporaryFile) {

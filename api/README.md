@@ -1,6 +1,6 @@
 # Estúdio Luz e Cor V2 — preparação Mercado Pago
 
-Esta pasta contém somente a camada inicial de backend. Ela não altera o catálogo nem ativa pagamentos. O frontend atual ainda não foi conectado.
+Esta pasta contém a camada de backend do checkout e os workers de processamento. A branch também prepara a integração do frontend V2 com `create-preference.php`, mas isso não significa que esteja publicado ou habilitado: `payments_enabled` permanece `false`.
 
 ## Arquivos
 
@@ -88,7 +88,7 @@ Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token
 ## Limites desta etapa
 
 - Nenhum pagamento está habilitado.
-- O frontend não chama `create-preference.php`.
+- O frontend V2 envia `package_id` e os códigos selecionados para `create-preference.php`. A interface só libera o checkout quando a quantidade de referências é exatamente a do pacote; o backend repete a validação no servidor. Com `payments_enabled` em `false`, a API responde sem criar preferência ou cobrança.
 - Não há geração de imagens por IA nem entrega automática.
 - Ainda é necessário testar PHP, permissões, SQLite, Webhook de teste e fluxo completo no subdomínio antes de qualquer ativação.
 - O tópico opcional `stop_delivery_op_wh` já é validado por assinatura e gravado em uma fila SQLite antes de responder 200. O worker `process-fraud-alerts.php` deve ser executado somente por CLI/cron. Para pagamento pendente, em processamento ou autorizado, ele tenta cancelar; para pagamento aprovado, só solicita reembolso integral quando `fraud_auto_refund_enabled` estiver exatamente `true`. Status desconhecidos, divergências ou reembolsos parciais vão para análise manual.

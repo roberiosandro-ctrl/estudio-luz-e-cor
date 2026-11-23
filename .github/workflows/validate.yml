@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - mp-checkout-backend-prep
+      - ai-sales-assistant-prep
   pull_request:
     branches:
       - main
@@ -36,6 +37,9 @@ jobs:
 
       - name: PHP smoke tests
         run: php tests/php-smoke.php
+          
+      - name: Assistant smoke tests
+        run: php tests/assistant-smoke.php
 
       - name: JavaScript syntax checks
         run: |

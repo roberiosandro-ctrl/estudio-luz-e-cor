@@ -29,6 +29,35 @@ foreach ($expectedPackages as $id => [$quantity, $amountCents]) {
 check(elc_path_is_within('/home/site/public_html/api', '/home/site/public_html'), 'detecta caminho dentro da raiz pública');
 check(!elc_path_is_within('/home/site/public_html_backup', '/home/site/public_html'), 'não confunde diretórios com prefixo semelhante');
 
+$documentRoot = elc_document_root();
+check(is_string($documentRoot) && $documentRoot !== '', 'resolve raiz pública também no CLI');
+$publicDatabaseRejected = false;
+try {
+    elc_database(['database_path' => $documentRoot . '/tests/should-not-create.sqlite']);
+} catch (RuntimeException $error) {
+    $publicDatabaseRejected = true;
+}
+check($publicDatabaseRejected, 'rejeita SQLite dentro da raiz pública também no CLI');
+
+$unsafeConfigDirectory = $documentRoot . '/tests/.elc-private-config-' . bin2hex(random_bytes(4));
+check(mkdir($unsafeConfigDirectory, 0700), 'cria diretório temporário de teste de configuração');
+$unsafeConfigPath = $unsafeConfigDirectory . '/mercadopago-config.php';
+file_put_contents($unsafeConfigPath, "<?php return [];\\n");
+putenv('ELC_MP_CONFIG_PATH=' . $unsafeConfigPath);
+$publicConfigRejected = false;
+try {
+    elc_load_config();
+} catch (RuntimeException $error) {
+    $publicConfigRejected = true;
+} finally {
+    putenv('ELC_MP_CONFIG_PATH');
+    if (is_file($unsafeConfigPath)) {
+        unlink($unsafeConfigPath);
+    }
+    rmdir($unsafeConfigDirectory);
+}
+check($publicConfigRejected, 'rejeita configuração dentro da raiz pública também no CLI');
+
 $secret = 'segredo-de-teste-nao-real';
 $requestId = 'request-123';
 $dataId = '123456789';

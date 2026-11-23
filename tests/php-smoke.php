@@ -26,6 +26,21 @@ foreach ($expectedPackages as $id => [$quantity, $amountCents]) {
     check($packages[$id]['amount_cents'] === $amountCents, "valor em centavos do {$id}");
 }
 
+check(elc_path_is_within('/home/site/public_html/api', '/home/site/public_html'), 'detecta caminho dentro da raiz pública');
+check(!elc_path_is_within('/home/site/public_html_backup', '/home/site/public_html'), 'não confunde diretórios com prefixo semelhante');
+
+$secret = 'segredo-de-teste-nao-real';
+$requestId = 'request-123';
+$dataId = '123456789';
+$timestamp = '1700000000';
+$manifest = 'id:' . $dataId . ';request-id:' . $requestId . ';ts:' . $timestamp . ';';
+$signature = 'ts=' . $timestamp . ',v1=' . hash_hmac('sha256', $manifest, $secret);
+check(elc_verify_webhook_signature($signature, $requestId, $dataId, $secret), 'aceita assinatura HMAC válida');
+check(!elc_verify_webhook_signature($signature, $requestId, '123456788', $secret), 'rejeita ID diferente');
+check(!elc_verify_webhook_signature($signature, 'request-456', $dataId, $secret), 'rejeita request ID diferente');
+check(!elc_verify_webhook_signature($signature . ',ts=' . $timestamp, $requestId, $dataId, $secret), 'rejeita timestamp duplicado');
+check(!elc_verify_webhook_signature($signature, $requestId, $dataId, ''), 'rejeita segredo vazio');
+
 $codes = elc_allowed_model_codes();
 check(count($codes) === 60, 'catálogo deve permitir 60 códigos');
 check(count(array_unique($codes)) === 60, 'códigos permitidos devem ser únicos');

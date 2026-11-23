@@ -10,6 +10,9 @@
   const closeSelection = document.getElementById("closeSelection");
   const clearSelection = document.getElementById("clearSelection");
   const requestButton = document.getElementById("requestButton");
+  const checkoutButton = document.getElementById("checkoutButton");
+  const selectedPackageSummary = document.getElementById("selectedPackageSummary");
+  const packageButtons = document.querySelectorAll(".package-select-button");
   const lightbox = document.getElementById("lightbox");
   const lightboxImage = document.getElementById("lightboxImage");
   const lightboxCode = document.getElementById("lightboxCode");
@@ -21,6 +24,8 @@
 
   const catalog = Array.isArray(window.catalogData) ? window.catalogData : [];
   const selected = new Map();
+  let selectedPackage = null;
+  let checkoutInProgress = false;
   let toastTimer;
 
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -187,6 +192,35 @@
     inspirationGrid.replaceChildren(fragment);
   }
 
+  function renderPackageSelection() {
+    if (!selectedPackageSummary || !checkoutButton) return;
+
+    packageButtons.forEach((button) => {
+      const active = selectedPackage?.id === button.dataset.packageId;
+      button.setAttribute("aria-pressed", String(active));
+      button.textContent = active ? "Pacote selecionado" : "Selecionar pacote";
+      button.closest(".pricing-card")?.classList.toggle("is-selected", active);
+    });
+
+    if (!selectedPackage) {
+      selectedPackageSummary.textContent = "Nenhum pacote selecionado. Escolha um pacote acima.";
+      checkoutButton.disabled = true;
+      return;
+    }
+
+    const difference = selectedPackage.quantity - selected.size;
+    let guidance = "Quantidade correta. Você já pode continuar para o pagamento.";
+    if (difference > 0) {
+      guidance = `Faltam ${difference} referência(s) para completar este pacote.`;
+    } else if (difference < 0) {
+      guidance = `Remova ${Math.abs(difference)} referência(s) para ficar na quantidade do pacote.`;
+    }
+
+    selectedPackageSummary.textContent =
+      `${selectedPackage.quantity} fotos — R$ ${selectedPackage.price}. ${guidance}`;
+    checkoutButton.disabled = checkoutInProgress || difference !== 0;
+  }
+
   function renderSelection() {
     if (!selectionList || !selectionCount) return;
     selectionCount.textContent = String(selected.size);
@@ -195,6 +229,7 @@
       selectionList.innerHTML = '<p class="empty-selection">Você ainda não selecionou um modelo.</p>';
       if (clearSelection) clearSelection.disabled = true;
       if (requestButton) requestButton.disabled = true;
+      renderPackageSelection();
       return;
     }
 
@@ -224,6 +259,7 @@
       fragment.append(item);
     });
     selectionList.replaceChildren(fragment);
+    renderPackageSelection();
   }
 
   function toggleSelection(model, collectionName) {
@@ -263,17 +299,77 @@
     const lines = Array.from(selected.values()).map((model) =>
       `• ${model.code} — ${model.title} (${model.collection})`
     );
+    const packageLine = selectedPackage
+      ? `Pacote escolhido: ${selectedPackage.quantity} fotos — R$ ${selectedPackage.price}.`
+      : "Ainda não escolhi o pacote.";
     const message = [
       "Olá! Gostaria de solicitar atendimento no Estúdio Luz e Cor.",
+      "",
+      packageLine,
       "",
       "Estas são as referências que selecionei:",
       ...lines,
       "",
-      "Podem me passar as informações dos pacotes, valores e próximas etapas?"
+      "Podem me orientar sobre as próximas etapas?"
     ].join("\n");
     const whatsappUrl = `https://wa.me/5548998336779?text=${encodeURIComponent(message)}`;
     const whatsappWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     if (!whatsappWindow) window.location.href = whatsappUrl;
+  }
+
+  async function startCheckout() {
+    if (!selectedPackage) {
+      showToast("Escolha um pacote antes de continuar.");
+      return;
+    }
+    if (selected.size !== selectedPackage.quantity) {
+      renderPackageSelection();
+      showToast(`Este pacote exige exatamente ${selectedPackage.quantity} referências diferentes.`);
+      return;
+    }
+    if (checkoutInProgress) return;
+
+    checkoutInProgress = true;
+    checkoutButton.disabled = true;
+    checkoutButton.textContent = "Preparando pagamento...";
+
+    try {
+      const response = await fetch("api/create-preference.php", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          package_id: selectedPackage.id,
+          model_codes: Array.from(selected.keys())
+        })
+      });
+
+      let result = {};
+      try {
+        result = await response.json();
+      } catch (parseError) {
+        throw new Error("Não foi possível interpretar a resposta do servidor. Tente novamente.");
+      }
+
+      if (!response.ok || result.ok !== true || typeof result.checkout_url !== "string") {
+        throw new Error(result.message || "Não foi possível iniciar o pagamento. Fale com o estúdio.");
+      }
+
+      const checkoutUrl = new URL(result.checkout_url, window.location.origin);
+      if (checkoutUrl.protocol !== "https:" || !/(^|\\.)mercadopago\\.com\\.br$/i.test(checkoutUrl.hostname)) {
+        throw new Error("O endereço de pagamento retornado não passou na validação de segurança.");
+      }
+
+      window.location.assign(checkoutUrl.href);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Pagamento indisponível no momento.");
+      checkoutInProgress = false;
+      checkoutButton.textContent = "Pagar com Mercado Pago";
+      renderPackageSelection();
+    }
   }
 
   catalogRoot?.addEventListener("click", (event) => {
@@ -319,6 +415,23 @@
     renderSelection();
     showToast("Sua seleção foi limpa.");
   });
+  packageButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const quantity = Number(button.dataset.quantity);
+      const price = button.dataset.price || "";
+      const id = button.dataset.packageId || "";
+      if (!id || !Number.isInteger(quantity) || quantity < 1 || !/^\\d{1,3},\\d{2}$/.test(price)) {
+        showToast("Não foi possível selecionar este pacote.");
+        return;
+      }
+      selectedPackage = { id, quantity, price };
+      renderPackageSelection();
+      showToast(`Pacote de ${quantity} fotos selecionado.`);
+    });
+  });
+
+  checkoutButton?.addEventListener("click", startCheckout);
+
   requestButton?.addEventListener("click", sendSelectionToWhatsApp);
   closeLightbox?.addEventListener("click", () => setLightbox(false));
   lightbox?.addEventListener("click", (event) => {

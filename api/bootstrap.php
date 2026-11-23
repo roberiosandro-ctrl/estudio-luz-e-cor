@@ -365,6 +365,17 @@ function elc_whatsapp_template_message(
     ];
 }
 
+function elc_refund_matches_payment(array $refund, string $paymentId, int $expectedAmountCents): bool
+{
+    $refundId = trim((string) ($refund['id'] ?? ''));
+    $refundCents = elc_amount_to_cents($refund['amount'] ?? null);
+    return $refundId !== ''
+        && (string) ($refund['payment_id'] ?? '') === $paymentId
+        && in_array((string) ($refund['status'] ?? ''), ['approved', 'refunded'], true)
+        && $refundCents !== null
+        && $refundCents === $expectedAmountCents;
+}
+
 function elc_fraud_action_for_payment_status(string $status): string
 {
     if (in_array($status, ['pending', 'in_process', 'authorized'], true)) {

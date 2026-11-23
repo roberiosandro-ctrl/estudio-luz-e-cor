@@ -14,37 +14,39 @@ try {
         exit;
     }
 
+    // Este endpoint é estritamente somente leitura: não chama elc_database(),
+    // pois essa função cria tabelas, aplica migrações e ativa WAL.
     $checks = [
         'php' => PHP_VERSION_ID >= 70400,
         'curl' => function_exists('curl_init'),
         'pdo_sqlite' => extension_loaded('pdo_sqlite'),
         'private_config_installed' => true,
         'sqlite_database_configured' => false,
-        'sqlite_database_open' => false,
+        'sqlite_database_file_exists' => false,
+        'sqlite_database_readable' => false,
         'sqlite_database_writable' => false,
+        'sqlite_directory_writable' => false,
+        'sqlite_outside_document_root' => false,
     ];
 
     $databasePath = $config['database_path'] ?? '';
     $checks['sqlite_database_configured'] = is_string($databasePath) && $databasePath !== '';
 
-    if ($checks['sqlite_database_configured'] && $checks['pdo_sqlite']) {
-        $pdo = elc_database($config);
-        $checks['sqlite_database_open'] = $pdo instanceof PDO;
+    if ($checks['sqlite_database_configured']) {
+        $databaseDirectory = realpath(dirname($databasePath));
+        $documentRoot = isset($_SERVER['DOCUMENT_ROOT'])
+            ? realpath((string) $_SERVER['DOCUMENT_ROOT'])
+            : false;
 
-        // Escrita temporária e reversível; nenhuma linha permanente é adicionada.
-        $pdo->beginTransaction();
-        try {
-            $pdo->exec('CREATE TEMP TABLE IF NOT EXISTS elc_health_probe (id INTEGER PRIMARY KEY, checked_at TEXT NOT NULL)');
-            $probe = $pdo->prepare('INSERT INTO elc_health_probe (checked_at) VALUES (:checked_at)');
-            $probe->execute([':checked_at' => gmdate('c')]);
-            $checks['sqlite_database_writable'] = $probe->rowCount() === 1;
-            $pdo->rollBack();
-        } catch (Throwable $probeError) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-            throw $probeError;
-        }
+        $checks['sqlite_outside_document_root'] = $databaseDirectory !== false
+            && ($documentRoot === false
+                || ($databaseDirectory !== $documentRoot
+                    && strpos($databaseDirectory, $documentRoot . DIRECTORY_SEPARATOR) !== 0));
+
+        $checks['sqlite_database_file_exists'] = is_file($databasePath);
+        $checks['sqlite_database_readable'] = $checks['sqlite_database_file_exists'] && is_readable($databasePath);
+        $checks['sqlite_database_writable'] = $checks['sqlite_database_file_exists'] && is_writable($databasePath);
+        $checks['sqlite_directory_writable'] = $databaseDirectory !== false && is_writable($databaseDirectory);
     }
 
     $ready = $checks['php']
@@ -52,8 +54,11 @@ try {
         && $checks['pdo_sqlite']
         && $checks['private_config_installed']
         && $checks['sqlite_database_configured']
-        && $checks['sqlite_database_open']
-        && $checks['sqlite_database_writable'];
+        && $checks['sqlite_database_file_exists']
+        && $checks['sqlite_database_readable']
+        && $checks['sqlite_database_writable']
+        && $checks['sqlite_directory_writable']
+        && $checks['sqlite_outside_document_root'];
 
     http_response_code($ready ? 200 : 503);
     header('Content-Type: application/json; charset=utf-8');

@@ -93,11 +93,17 @@ try {
             $history = array_reverse($historyQuery->fetchAll());
 
             $answer = elc_assistant_request_ai($config, $history);
-            $reply = $answer['reply'];
+            // Links externos gerados livremente pela IA são removidos; somente o checkout
+            // criado pelo backend pode ser enviado ao cliente.
+            $reply = preg_replace('~https?://[^\\s]+~iu', '[link removido]', $answer['reply']);
             $packageId = $answer['package_id'];
             $modelCodes = $answer['model_codes'];
+            $customerAuthorizedCheckout = elc_assistant_customer_requested_checkout(
+                (string) $inbound['message_text'],
+                $history
+            );
 
-            if ($answer['checkout_intent']) {
+            if ($answer['checkout_intent'] && $customerAuthorizedCheckout) {
                 $package = is_string($packageId) ? (elc_packages()[$packageId] ?? null) : null;
                 $validSelection = is_array($package)
                     && count($modelCodes) === (int) $package['quantity'];

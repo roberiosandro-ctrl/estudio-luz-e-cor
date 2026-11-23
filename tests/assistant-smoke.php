@@ -56,6 +56,15 @@ assistant_check($messages[1]['text'] === 'Ver pacotes', 'extrai resposta de bot�
 assistant_check(strpos($messages[2]['text'], 'imagem') !== false, 'orienta mídia ainda não suportada');
 assistant_check($messages[0]['phone_number_id'] === '123456789012345', 'preserva Phone Number ID');
 
+$historyWithCheckoutQuestion = [
+    ['role' => 'assistant', 'body' => 'Quer que eu gere o link de pagamento para você?'],
+    ['role' => 'user', 'body' => 'Sim'],
+];
+assistant_check(elc_assistant_customer_requested_checkout('Pode gerar meu link de pagamento', []), 'reconhece pedido explícito de checkout');
+assistant_check(elc_assistant_customer_requested_checkout('Sim', $historyWithCheckoutQuestion), 'reconhece confirmação de pergunta anterior sobre link');
+assistant_check(!elc_assistant_customer_requested_checkout('Sim', []), 'não gera checkout com sim isolado');
+assistant_check(!elc_assistant_customer_requested_checkout('Como funciona o pagamento?', []), 'não confunde dúvida com autorização de checkout');
+
 $catalog = elc_assistant_catalog();
 assistant_check(count($catalog) === 60, 'carrega as 60 referências do catálogo existente');
 assistant_check($catalog[0]['code'] === 'ELEG-01', 'primeira referência do catálogo');

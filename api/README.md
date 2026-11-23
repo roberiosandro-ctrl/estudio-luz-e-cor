@@ -8,6 +8,7 @@ Esta pasta contém somente a camada inicial de backend. Ela não altera o catál
 - `api/create-preference.php`: endpoint POST para criar uma preferência Checkout Pro, somente quando o servidor for explicitamente habilitado.
 - `api/mercadopago-webhook.php`: valida a assinatura do Webhook, consulta o pagamento e confere o vínculo com a preferência salva.
 - `api/health.php`: diagnóstico protegido por token privado; somente leitura, sem criar banco, tabelas, migrações ou arquivos.
+- `api/process-fraud-alerts.php`: worker exclusivamente CLI para processar a fila persistente de alertas de fraude; não deve ser chamado por HTTP.
 
 ## Endpoints
 
@@ -47,6 +48,7 @@ return [
     'access_token' => '',
     'webhook_secret' => '',
     'seller_user_id' => '', // ID numérico da conta vendedora; obrigatório em produção
+    'fraud_auto_refund_enabled' => false, // manter false até concluir testes sandbox do worker
     'health_token' => '', // gerar valor longo e aleatório, somente no servidor
     'api_base_url' => 'https://api.mercadopago.com',
     'public_base_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2',
@@ -72,7 +74,8 @@ Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token
 8. Eventos repetidos não reaplicam atualizações. Eventos antigos não rebaixam um pagamento aprovado, reembolsado ou contestado.
 9. Não se aplica uma janela curta de idade ao timestamp da assinatura: o Mercado Pago pode reenviar Webhooks em tentativas posteriores; a autenticidade é verificada pela assinatura e a repetição é controlada por idempotência e data de atualização do pagamento.
 10. O SQLite inclui migração da coluna de data de atualização do pagamento.
-11. O endpoint de diagnóstico exige `X-Health-Token`; sem token privado configurado responde 404. A verificação é somente leitura e apenas confere a existência e as permissões do arquivo SQLite, sem abrir o banco para escrita.
+11. O endpoint de diagnóstico aceita somente GET, exige `X-Health-Token` e responde 404 sem token válido. A verificação é somente leitura e confere existência, permissões e isolamento do SQLite, sem abrir o banco para escrita.
+12. Configuração privada e banco rejeitam caminhos dentro da raiz pública e links simbólicos para evitar exposição indireta.
 
 ## Limites desta etapa
 
@@ -80,7 +83,8 @@ Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token
 - O frontend não chama `create-preference.php`.
 - Não há geração de imagens por IA nem entrega automática.
 - Ainda é necessário testar PHP, permissões, SQLite, Webhook de teste e fluxo completo no subdomínio antes de qualquer ativação.
-- O tópico opcional de alertas de fraude (`stop_delivery_op_wh`) ainda não possui handler específico. Não o habilitar no painel do Mercado Pago até implementar e testar esse fluxo; a documentação informa que esses alertas não seguem o reenvio padrão e exigem tratamento próprio.
+- O tópico opcional `stop_delivery_op_wh` já é validado por assinatura e gravado em uma fila SQLite antes de responder 200. O worker `process-fraud-alerts.php` deve ser executado somente por CLI/cron. Para pagamento pendente, em processamento ou autorizado, ele tenta cancelar; para pagamento aprovado, só solicita reembolso integral quando `fraud_auto_refund_enabled` estiver exatamente `true`. Status desconhecidos, divergências ou reembolsos parciais vão para análise manual.
+- **Não habilitar `stop_delivery_op_wh` ainda.** Primeiro é necessário instalar e testar a fila e o worker no sandbox, configurar cron confiável e confirmar o funcionamento. O Mercado Pago informa que esse tópico não segue o reenvio padrão; se a fila não persistir o evento, a notificação pode ser perdida.
 - Um pagamento adicional feito após uma aprovação exige reconciliação manual; esta etapa não automatiza reembolsos nem tratamento de disputas.
 
 ## Estado

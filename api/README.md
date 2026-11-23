@@ -9,6 +9,7 @@ Esta pasta contém somente a camada inicial de backend. Ela não altera o catál
 - `api/mercadopago-webhook.php`: valida a assinatura do Webhook, consulta o pagamento e confere o vínculo com a preferência salva.
 - `api/health.php`: diagnóstico protegido por token privado; somente leitura, sem criar banco, tabelas, migrações ou arquivos.
 - `api/process-fraud-alerts.php`: worker exclusivamente CLI para processar a fila persistente de alertas de fraude; não deve ser chamado por HTTP.
+- `api/process-whatsapp-notifications.php`: worker exclusivamente CLI para enviar notificações de pagamento aprovado ao número do responsável, usando template aprovado da WhatsApp Business Platform.
 
 ## Endpoints
 
@@ -49,6 +50,13 @@ return [
     'webhook_secret' => '',
     'seller_user_id' => '', // ID numérico da conta vendedora; obrigatório em produção
     'fraud_auto_refund_enabled' => false, // manter false até concluir testes sandbox do worker
+    'whatsapp_notifications_enabled' => false,
+    'whatsapp_graph_api_version' => 'v27.0',
+    'whatsapp_phone_number_id' => '',
+    'whatsapp_access_token' => '',
+    'whatsapp_recipient' => '', // número do responsável em E.164, somente dígitos
+    'whatsapp_template_name' => 'elc_payment_approved',
+    'whatsapp_template_language' => 'pt_BR',
     'health_token' => '', // gerar valor longo e aleatório, somente no servidor
     'api_base_url' => 'https://api.mercadopago.com',
     'public_base_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2',
@@ -85,6 +93,10 @@ Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token
 - Ainda é necessário testar PHP, permissões, SQLite, Webhook de teste e fluxo completo no subdomínio antes de qualquer ativação.
 - O tópico opcional `stop_delivery_op_wh` já é validado por assinatura e gravado em uma fila SQLite antes de responder 200. O worker `process-fraud-alerts.php` deve ser executado somente por CLI/cron. Para pagamento pendente, em processamento ou autorizado, ele tenta cancelar; para pagamento aprovado, só solicita reembolso integral quando `fraud_auto_refund_enabled` estiver exatamente `true`. Status desconhecidos, divergências ou reembolsos parciais vão para análise manual.
 - **Não habilitar `stop_delivery_op_wh` ainda.** Primeiro é necessário instalar e testar a fila e o worker no sandbox, configurar cron confiável e confirmar o funcionamento. O Mercado Pago informa que esse tópico não segue o reenvio padrão; se a fila não persistir o evento, a notificação pode ser perdida.
+- A notificação WhatsApp é enfileirada somente quando `whatsapp_notifications_enabled` está exatamente `true` e o destinatário/template estão válidos. O worker é CLI/cron; não é chamado pelo navegador. O token, o Phone Number ID e o destinatário ficam somente no arquivo privado.
+- A mensagem usa um template `UTILITY` aprovado no WhatsApp Manager, em português (`pt_BR`), com três variáveis: referência do pedido, pacote e valor. O responsável precisa ter autorizado o recebimento. Fora da janela de atendimento, a plataforma exige template aprovado.
+- O worker registra `sent`, `failed`, `retry` ou `uncertain`. Resultados de envio incertos não são reenviados automaticamente, para evitar mensagens duplicadas.
+- As notificações do aplicativo Mercado Pago são independentes desta integração e precisam ser habilitadas nas configurações do próprio aplicativo. O backend não consegue ativá-las.
 - Um pagamento adicional feito após uma aprovação exige reconciliação manual; esta etapa não automatiza reembolsos nem tratamento de disputas.
 
 ## Estado

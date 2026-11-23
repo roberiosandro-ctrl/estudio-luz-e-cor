@@ -227,7 +227,7 @@ function elc_assistant_system_instructions(): string
         'Nunca peça senha, código SMS, token, dados completos de cartão ou documentos pelo WhatsApp.',
         'Só inclua um código em model_codes quando o cliente tiver escolhido claramente aquela referência pelo código ou pelo nome. Nunca escolha modelos pelo cliente.',
         'package_id deve ser preenchido somente quando o cliente tiver escolhido claramente um pacote. Se ainda estiver decidindo, use null.',
-        'checkout_intent deve ser true somente quando o cliente pedir explicitamente para pagar, comprar agora ou receber o link, e já houver pacote e a quantidade exata de referências selecionadas. Caso contrário, false.',
+        'checkout_intent deve ser true somente quando o cliente pedir explicitamente para pagar, comprar agora ou receber o link, e já houver pacote e a quantidade exata de referências selecionadas. Uma resposta afirmativa clara a uma pergunta anterior sua pedindo autorização para gerar o link também conta como autorização. Caso contrário, false.',
         'Quando faltarem referências, pergunte quais códigos ou nomes o cliente deseja. A quantidade precisa corresponder exatamente ao pacote.',
         'Se o cliente perguntar como enviar fotos pessoais, explique apenas que, depois de alinhar o pedido, o estúdio orienta o envio pelo canal combinado. Não prometa que o robô processa imagens recebidas no WhatsApp.',
         'Se não souber algo, diga com transparência e ofereça encaminhar a dúvida ao estúdio, sem afirmar que alguém já foi notificado.',
@@ -318,7 +318,7 @@ function elc_assistant_request_ai(array $config, array $history): array
     curl_close($curl);
 
     if ($body === false) {
-        throw new RuntimeException('Falha de comunicação com a inteligência artificial.', $curlError ?: 503);
+        throw new RuntimeException('Falha de comunicação com a inteligência artificial.', 503);
     }
     $decoded = json_decode((string) $body, true);
     if ($status === 429 || $status >= 500) {
@@ -408,7 +408,7 @@ function elc_assistant_send_text(array $config, string $recipient, string $text,
     curl_close($curl);
 
     if ($body === false) {
-        throw new RuntimeException('Envio WhatsApp com resultado incerto; não reenviar automaticamente.', $curlError ?: 503);
+        throw new RuntimeException('Envio WhatsApp com resultado incerto; não reenviar automaticamente.', 503);
     }
     $decoded = json_decode((string) $body, true);
     if ($status === 429) {

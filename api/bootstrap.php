@@ -25,7 +25,7 @@ function elc_private_config_path(): string
 
     // Caminho absoluto conhecido da home da conta Hostinger.
     // Mantido fora de public_html; pode ser sobrescrito por variável de ambiente.
-    return '/home/u643738877/estudio-luz-e-cor-v2-private/mercadopago-config.php';
+    return '/home/u643738877/domains/rsmtrafegopago.online/private/mercadopago-config.php';
 }
 
 function elc_load_config(): array

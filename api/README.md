@@ -80,6 +80,7 @@ Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token
 - O frontend não chama `create-preference.php`.
 - Não há geração de imagens por IA nem entrega automática.
 - Ainda é necessário testar PHP, permissões, SQLite, Webhook de teste e fluxo completo no subdomínio antes de qualquer ativação.
+- O tópico opcional de alertas de fraude (`stop_delivery_op_wh`) ainda não possui handler específico. Não o habilitar no painel do Mercado Pago até implementar e testar esse fluxo; a documentação informa que esses alertas não seguem o reenvio padrão e exigem tratamento próprio.
 - Um pagamento adicional feito após uma aprovação exige reconciliação manual; esta etapa não automatiza reembolsos nem tratamento de disputas.
 
 ## Estado

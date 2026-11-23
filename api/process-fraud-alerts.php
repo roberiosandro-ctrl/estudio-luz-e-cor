@@ -231,15 +231,9 @@ try {
                     'elc-fraud-alert-' . substr($alert['event_key'], 0, 48)
                 );
                 $refundId = (string) ($refund['id'] ?? '');
-                $refundCents = elc_amount_to_cents($refund['amount'] ?? null);
-                if ($refundId === ''
-                    || (string) ($refund['payment_id'] ?? '') !== $paymentId
-                    || !in_array((string) ($refund['status'] ?? ''), ['approved', 'refunded'], true)) {
-                    throw new RuntimeException('O Mercado Pago não confirmou o reembolso integral.');
-                }
-                if ($refundCents === null || $refundCents !== $receivedCents) {
+                if (!elc_refund_matches_payment($refund, $paymentId, $receivedCents)) {
                     elc_mark_fraud_order($pdo, $order, $paymentId, 'fraud_alert_manual_review', (int) $paymentUpdatedAt);
-                    elc_finish_fraud_alert($pdo, $alert, 'manual_review', $externalReference, (string) $order['id'], $refundId, 'Valor do reembolso não corresponde ao pagamento integral.');
+                    elc_finish_fraud_alert($pdo, $alert, 'manual_review', $externalReference, (string) $order['id'], $refundId !== '' ? $refundId : null, 'Resposta de reembolso não confirma valor integral e pagamento correto.');
                     continue;
                 }
 

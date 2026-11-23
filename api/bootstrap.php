@@ -248,6 +248,24 @@ function elc_allowed_model_codes(): array
     return $codes;
 }
 
+function elc_normalize_model_codes($modelCodes): ?array
+{
+    if (!is_array($modelCodes) || count($modelCodes) < 1 || count($modelCodes) > 60) {
+        return null;
+    }
+
+    $allowedCodes = array_flip(elc_allowed_model_codes());
+    $validatedCodes = [];
+    foreach ($modelCodes as $code) {
+        if (!is_string($code) || !isset($allowedCodes[$code])) {
+            return null;
+        }
+        $validatedCodes[$code] = true;
+    }
+
+    return array_keys($validatedCodes);
+}
+
 function elc_amount_to_cents($amount): ?int
 {
     if (!is_string($amount) && !is_int($amount) && !is_float($amount)) {

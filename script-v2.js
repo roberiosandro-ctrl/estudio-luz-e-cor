@@ -338,7 +338,7 @@
     checkoutButton.textContent = "Preparando pagamento...";
 
     try {
-      const response = await fetch("api/create-preference.php", {
+      const response = await fetch("../api/create-preference.php", {
         method: "POST",
         credentials: "same-origin",
         headers: {

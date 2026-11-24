@@ -35,7 +35,7 @@ Os códigos permitidos correspondem às 10 coleções do catálogo versionado, c
 
 Criar no servidor Hostinger, fora de `public_html`:
 
-`/home/u643738877/domains/rsmtrafegopago.online/private/mercadopago-config.php`
+`/home/u643738877/estudio-luz-e-cor-v2-private/mercadopago-config.php`
 
 Estrutura inicial, com pagamentos desativados e credenciais vazias:
 
@@ -66,7 +66,21 @@ return [
 ];
 ~~~
 
-O bootstrap usa esse caminho absoluto por padrão. A pasta e o arquivo de configuração devem ter permissões restritas, ajustadas ao usuário PHP da hospedagem. O banco SQLite também deve permanecer fora de `public_html`. O arquivo `orders.sqlite` será criado pelo backend somente quando o primeiro acesso legítimo ao banco ocorrer; o endpoint de diagnóstico não o cria.
+O bootstrap usa esse caminho absoluto por padrão, correspondente à pasta privada encontrada na auditoria da Hostinger. O arquivo de configuração deve ser criado nessa pasta, fora de `public_html`, com permissões restritas ao usuário PHP da hospedagem. O banco SQLite será armazenado ao lado do arquivo de configuração, também fora de `public_html`, e será criado pelo backend somente no primeiro acesso legítimo ao banco; o endpoint de diagnóstico não o cria.
+
+### Destino correto no ambiente de teste 1111
+
+Raiz pública do V2:
+
+`/home/u643738877/domains/rsmtrafegopago.online/public_html/estudioluzecor-teste1111/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2/`
+
+Os arquivos desta pasta `api/` do repositório devem ser publicados dentro de uma subpasta `api/` nessa raiz do V2. **Não** publicar em `/home/u643738877/domains/rsmtrafegopago.online/public_html/api/`, pois o frontend chama `api/create-preference.php` relativamente à própria pasta do V2.
+
+Pasta privada confirmada na auditoria:
+
+`/home/u643738877/estudio-luz-e-cor-v2-private/`
+
+O arquivo `mercadopago-config.php` e o banco `orders.sqlite` ficam nessa pasta privada. Não colocar nenhum deles dentro da pasta pública.
 
 Não enviar a configuração, o banco, Access Token, segredo do Webhook ou token de diagnóstico ao GitHub, ao navegador ou ao chat.
 

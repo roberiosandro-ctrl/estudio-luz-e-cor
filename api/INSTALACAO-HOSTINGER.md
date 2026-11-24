@@ -4,11 +4,15 @@ Este guia se refere exclusivamente à branch `mp-checkout-backend-prep`. Não pu
 
 ## 1. Destino exato
 
-Instalar os arquivos PHP somente nesta pasta do subdomínio de teste:
+Manter o frontend existente nesta pasta do subdomínio de teste:
 
 `public_html/estudioluzecor-teste1111/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2/`
 
-Criar dentro dela a pasta `api/` e copiar somente:
+A API fica em uma pasta irmã do frontend:
+
+`public_html/estudioluzecor-teste1111/estudioluzecor-teste1111/api/`
+
+Copiar os arquivos PHP somente para essa pasta `api/`:
 
 - `api/bootstrap.php`
 - `api/create-preference.php`
@@ -18,6 +22,8 @@ Criar dentro dela a pasta `api/` e copiar somente:
 - `api/process-whatsapp-notifications.php` (executar exclusivamente por PHP CLI/cron, nunca via navegador)
 
 Não copiar documentação. **Não copiar nem substituir** `index-v2.html`, `script-v2.js`, `catalog-data-v2.js`, CSS, imagens ou quaisquer outros arquivos atuais. A correção de WhatsApp feita diretamente na Hostinger deve ser preservada.
+
+Observação: como o frontend fica dentro de `estudio-luz-e-cor-identidade-agencia-flow-v2/` e a API fica na pasta irmã `api/`, o JavaScript deve chamar `../api/create-preference.php`. Não usar `api/create-preference.php`, pois esse caminho procuraria uma pasta API dentro do frontend.
 
 ## 2. Diretório privado
 
@@ -51,9 +57,9 @@ return [
     'whatsapp_template_language' => 'pt_BR',
     'health_token' => '', // gerar um valor longo e aleatório, somente no servidor
     'api_base_url' => 'https://api.mercadopago.com',
-    'public_base_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2',
+    'public_base_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111',
     'return_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2/index-v2.html',
-    'webhook_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/estudio-luz-e-cor-identidade-agencia-flow-v2/api/mercadopago-webhook.php',
+    'webhook_url' => 'https://estudioluzecor-teste1111.rsmtrafegopago.online/estudioluzecor-teste1111/api/mercadopago-webhook.php',
     'database_path' => __DIR__ . '/orders.sqlite',
 ];
 ~~~
@@ -80,9 +86,9 @@ Até nova autorização explícita:
 
 - não inserir Access Token nem segredo do Webhook;
 - não criar preferências ou cobranças;
-- não conectar o botão de compra do frontend;
+- manter o botão de compra conectado ao endpoint `../api/create-preference.php`; com `payments_enabled = false`, a API deve recusar a criação de preferência;
 - não habilitar pagamentos de produção;
-- não alterar o JavaScript atual;
+- não substituir o JavaScript atual por versões antigas;
 - não iniciar geração de imagens por IA;
 - não publicar nada no domínio principal.
 

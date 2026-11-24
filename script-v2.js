@@ -234,7 +234,7 @@
     }
 
     if (clearSelection) clearSelection.disabled = false;
-    if (requestButton) requestButton.disabled = false;
+    if (requestButton) requestButton.disabled = true;
     const fragment = document.createDocumentFragment();
     selected.forEach((model) => {
       const item = document.createElement("div");
@@ -298,28 +298,6 @@
     return null;
   }
 
-  function sendSelectionToWhatsApp() {
-    if (!selected.size) return;
-    const lines = Array.from(selected.values()).map((model) =>
-      `• ${model.code} — ${model.title} (${model.collection})`
-    );
-    const packageLine = selectedPackage
-      ? `Pacote escolhido: ${selectedPackage.quantity} fotos — R$ ${selectedPackage.price}.`
-      : "Ainda não escolhi o pacote.";
-    const message = [
-      "Olá! Gostaria de solicitar atendimento no Estúdio Luz e Cor.",
-      "",
-      packageLine,
-      "",
-      "Estas são as referências que selecionei:",
-      ...lines,
-      "",
-      "Podem me orientar sobre as próximas etapas?"
-    ].join("\n");
-    const whatsappUrl = `https://wa.me/5548998336779?text=${encodeURIComponent(message)}`;
-    const whatsappWindow = window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-    if (!whatsappWindow) window.location.href = whatsappUrl;
-  }
 
   async function startCheckout() {
     if (!selectedPackage) {
@@ -436,7 +414,7 @@
 
   checkoutButton?.addEventListener("click", startCheckout);
 
-  requestButton?.addEventListener("click", sendSelectionToWhatsApp);
+  if (requestButton) requestButton.disabled = true;
   closeLightbox?.addEventListener("click", () => setLightbox(false));
   lightbox?.addEventListener("click", (event) => {
     if (event.target === lightbox) setLightbox(false);

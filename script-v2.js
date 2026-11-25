@@ -12,6 +12,7 @@
   const requestButton = document.getElementById("requestButton");
   const checkoutButton = document.getElementById("checkoutButton");
   const selectedPackageSummary = document.getElementById("selectedPackageSummary");
+  const purchasePackageSelect = document.getElementById("purchasePackageSelect");
   const packageButtons = document.querySelectorAll(".package-select-button");
   const lightbox = document.getElementById("lightbox");
   const lightboxImage = document.getElementById("lightboxImage");
@@ -202,8 +203,11 @@
       button.closest(".pricing-card")?.classList.toggle("is-selected", active);
     });
 
+    if (purchasePackageSelect) purchasePackageSelect.value = selectedPackage?.id || "";
     if (!selectedPackage) {
-      selectedPackageSummary.textContent = "Nenhum pacote selecionado. Escolha um pacote acima.";
+      selectedPackageSummary.textContent = selected.size
+        ? `${selected.size} referência(s) selecionada(s). Agora escolha o pacote correspondente.`
+        : "Escolha suas referências e selecione um pacote.";
       checkoutButton.disabled = true;
       return;
     }
@@ -268,8 +272,8 @@
       selected.delete(model.code);
       showToast(`${model.code} removido da seleção.`);
     } else {
-      if (selectedPackage && selected.size >= selectedPackage.quantity) {
-        showToast(`Este pacote permite exatamente ${selectedPackage.quantity} referências. Remova uma antes de adicionar outra.`);
+      if (selected.size >= 20) {
+        showToast("O catálogo permite selecionar até 20 referências por pedido.");
         return;
       }
       selected.set(model.code, {
@@ -397,19 +401,31 @@
     renderSelection();
     showToast("Sua seleção foi limpa.");
   });
+  function choosePackage(id, quantity, price) {
+    if (!id || !Number.isInteger(quantity) || quantity < 1 || quantity > 20 || !/^\d{1,3},\d{2}$/.test(price)) {
+      showToast("Não foi possível selecionar este pacote.");
+      return;
+    }
+    selectedPackage = { id, quantity, price };
+    renderPackageSelection();
+    showToast(`Pacote de ${quantity} fotos selecionado.`);
+  }
+
   packageButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      const quantity = Number(button.dataset.quantity);
-      const price = button.dataset.price || "";
-      const id = button.dataset.packageId || "";
-      if (!id || !Number.isInteger(quantity) || quantity < 1 || !/^\d{1,3},\d{2}$/.test(price)) {
-        showToast("Não foi possível selecionar este pacote.");
-        return;
-      }
-      selectedPackage = { id, quantity, price };
-      renderPackageSelection();
-      showToast(`Pacote de ${quantity} fotos selecionado.`);
+      choosePackage(button.dataset.packageId || "", Number(button.dataset.quantity), button.dataset.price || "");
+      setPanel(true);
     });
+  });
+
+  purchasePackageSelect?.addEventListener("change", () => {
+    const option = purchasePackageSelect.selectedOptions[0];
+    if (!option?.value) {
+      selectedPackage = null;
+      renderPackageSelection();
+      return;
+    }
+    choosePackage(option.value, Number(option.dataset.quantity), option.dataset.price || "");
   });
 
   checkoutButton?.addEventListener("click", startCheckout);

@@ -63,7 +63,7 @@
       <div class="packages-copy">
         <p class="kicker">PACOTES E VALORES</p>
         <h2>Escolha seu pacote <em>de fotos.</em></h2>
-        <p>Selecione um pacote. Depois, escolha exatamente essa quantidade de referências no catálogo e finalize pelo Mercado Pago. O atendimento automático pelo WhatsApp será integrado em uma próxima etapa.</p>
+        <p>Explore o catálogo e marque suas referências favoritas. Depois, escolha o pacote correspondente, confira seu pedido e continue para o pagamento seguro. Se preferir, você também poderá pedir orientação pelo atendimento do Estúdio.</p>
       </div>
       <div class="pricing-grid">
         <article class="pricing-card">
@@ -99,8 +99,8 @@
         </article>
       </div>
       <div class="pricing-footer">
-        <p>Depois de escolher o pacote, selecione suas referências e abra “Minha seleção” para finalizar o pedido.</p>
-        <p class="pricing-note">Atendimento automático pelo WhatsApp em preparação.</p>
+        <p>Você pode escolher o pacote antes ou depois de selecionar suas referências. Abra “Minha seleção” para conferir e continuar.</p>
+        <p class="pricing-note">A seleção precisa corresponder exatamente à quantidade de fotos do pacote.</p>
       </div>
     </section>
 
@@ -173,7 +173,7 @@
         </details>
         <details>
           <summary>Como faço para escolher meus modelos?</summary>
-          <p>Escolha um pacote, adicione exatamente a quantidade de referências correspondente e abra “Minha seleção”. Você pode pagar pelo Mercado Pago. O envio da seleção ao robô de atendimento será liberado quando a integração estiver pronta.</p>
+          <p>Adicione suas referências, escolha o pacote correspondente e confira todos os detalhes antes de pagar. A confirmação do pagamento é feita pelo sistema.</p>
         </details>
         <details>
           <summary>Os ensaios são criados com inteligência artificial?</summary>
@@ -223,7 +223,16 @@
     <div class="selection-list" id="selectionList"><p class="empty-selection">Você ainda não selecionou um modelo.</p></div>
     <div class="panel-footer">
       <p>Escolha um pacote e selecione exatamente a quantidade de referências correspondente.</p>
-      <div class="selected-package-summary" id="selectedPackageSummary" aria-live="polite">Nenhum pacote selecionado.</div>
+      <label class="purchase-package-label" for="purchasePackageSelect">Escolha seu pacote</label>
+      <select class="purchase-package-select" id="purchasePackageSelect">
+        <option value="">Selecione a quantidade de fotos</option>
+        <option value="fotos-02" data-quantity="2" data-price="29,90">2 fotos — R$ 29,90</option>
+        <option value="fotos-05" data-quantity="5" data-price="54,90">5 fotos — R$ 54,90</option>
+        <option value="fotos-10" data-quantity="10" data-price="89,90">10 fotos — R$ 89,90</option>
+        <option value="fotos-15" data-quantity="15" data-price="109,90">15 fotos — R$ 109,90</option>
+        <option value="fotos-20" data-quantity="20" data-price="129,90">20 fotos — R$ 129,90</option>
+      </select>
+      <div class="selected-package-summary" id="selectedPackageSummary" aria-live="polite">Escolha suas referências e selecione um pacote.</div>
       <button class="checkout-button" id="checkoutButton" type="button" disabled>Pagar com Mercado Pago</button>
       <button class="request-button" id="requestButton" type="button" disabled>Robô de atendimento em breve</button>
       <button class="clear-button" id="clearSelection" type="button" disabled>Limpar seleção</button>
